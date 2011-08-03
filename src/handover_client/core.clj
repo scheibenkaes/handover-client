@@ -1,1 +1,5 @@
-(ns handover-client.core)
+(ns handover-client.core
+  (:gen-class))
+
+(defn -main [& args] 
+  )
