@@ -3,6 +3,8 @@
   (:use clojure.java.io)
   (:gen-class))
 
+(def connection-data {:generated-id "asdf1234"})
+
 (def main-frame
   (frame :title "Handover" :size [800 :by 600] :on-close :exit))
 
@@ -24,11 +26,20 @@
             [:separator "span 2"]
             [(action :name "Ok") ""]]))
 
+(def send-panel 
+  (mig-panel
+    :constraints ["" "[center][300][center]"]
+    :items [[(label :text "Teilen Sie Ihrem Partner diese ID mit." :font bold-font) "span 3,wrap,align left"]
+            ["#" ""][(text :text (:generated-id connection-data) :editable? false) "growx"][(action :icon (resource "icons/edit-paste.png") :tip "Die ID in die Zwischenablage kopieren.") "wrap,growx"]
+            [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
+            [:separator ""]
+            [(action :name "Weiter") "growx,wrap"] ]))
+
 (def welcome-panel 
   (mig-panel
     :constraints ["" "[120]25[][]" "[][][]15[]"]
     :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1,wrap"]
-            [(action :handler (fn [e] (println e)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." "wrap"]
+            [(action :handler (fn [e] (show-panel-in-main-frame send-panel)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." "wrap"]
             [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))) "growx"]["Eine Datei empfangen." "span 2"]
             [:separator "wrap,growx"]
             [(action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))) "growx"]["Das Programm beenden" "span 2"]]))
