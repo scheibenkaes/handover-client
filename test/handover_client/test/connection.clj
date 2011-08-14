@@ -6,6 +6,5 @@
   (is (string? (create-id "asd"))))
 
 (deftest test-generate-new-id 
-  (is (= 13 (count (generate-new-id))))
-  (is (not= (generate-new-id) (generate-new-id)))
-  (is (.startsWith (generate-new-id) "TEMP-")))
+  (is (= 8 (count (generate-new-id))))
+  (is (not= (generate-new-id) (generate-new-id))))
