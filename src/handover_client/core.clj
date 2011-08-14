@@ -7,7 +7,9 @@
   (frame :title "Handover" :size [800 :by 600] :on-close :exit))
 
 (defn show-panel-in-main-frame [p] 
-  (config! main-frame :content p))
+  (-> main-frame 
+    (config! :content p)
+    (pack!)))
 
 (def bold-font "ARIAL-BOLD-18")
 
@@ -28,8 +30,8 @@
 
 (defn show-main-window [] 
   (invoke-later 
-    (show-panel-in-main-frame receive-panel)
-    (show! main-frame)))
+    (show-panel-in-main-frame welcome-panel)
+    (-> main-frame pack! show!)))
 
 (defn -main [& args] 
   (show-main-window))
