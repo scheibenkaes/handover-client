@@ -26,3 +26,16 @@
 
 (defn generate-new-id [] 
   (->> (System/nanoTime) (str (get-system-property "user.home") (rand-int 100)) create-id))
+
+(defn create-tmp-accounts [con] 
+  "Create two tmp accounts."
+  (let [other (generate-new-id)
+        me (str other "-1")
+        [tmp-other tmp-me] (map #(str "TEMP-" %) [other me])
+        passwd (generate-new-id)
+        other-passwd other
+        accounts [[con tmp-me passwd] [con tmp-other other-passwd]]]
+    (when (not-any? nil? (map #(apply create-user %) accounts))
+      {:me {:id tmp-me :password passwd}
+       :other {:id tmp-other :password other-passwd}
+       })))
