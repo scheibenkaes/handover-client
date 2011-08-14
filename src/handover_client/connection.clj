@@ -6,4 +6,4 @@
   (->> in (digest "SHA1") (take 8) (apply str)))
 
 (defn generate-new-id [] 
-  (->> (System/nanoTime) (str (get-system-property "user.home")) create-id))
+  (->> (System/nanoTime) (str (get-system-property "user.home") (rand-int 100)) create-id))
