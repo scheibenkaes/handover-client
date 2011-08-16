@@ -77,17 +77,3 @@
      (make-friend! my-con (-> other :id with-host-name))
      (make-friend! other-con (-> me :id with-host-name)))))
 
-(def roster-listener
-  (proxy [RosterListener][]
-    (entriesAdded [this added] (println added))
-    (entriesDeleted [this deleted] (println deleted))
-    (entriesUpdated [this updated] (println updated))
-    (presenceChanged [this presence] (println presence))))
-
-(def accept-all-packets 
-  (proxy [PacketFilter][]
-    (accept [this _] true)))
-
-(def packet-listener 
-  (proxy [PacketListener][]
-    (processPacket [this p] (println p))))
