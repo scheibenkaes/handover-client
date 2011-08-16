@@ -27,7 +27,7 @@
 (defn generate-new-id [] 
   (->> (System/nanoTime) (str (get-system-property "user.home") (rand-int 100)) create-id))
 
-(defn create-tmp-accounts [con] 
+(defn create-tmp-accounts! [con]
   "Create two tmp accounts."
   (let [other (generate-new-id)
         me (str other "-1")
