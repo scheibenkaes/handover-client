@@ -8,3 +8,8 @@
 (deftest test-generate-new-id 
   (is (= 8 (count (generate-new-id))))
   (is (not= (generate-new-id) (generate-new-id))))
+
+(deftest test-with-host-name 
+  (binding [*host* "bar"]
+    (is (= "foo@bar" (with-host-name "foo")))
+    (is (= "foo@bar" (with-host-name "foo@bar")))))
