@@ -4,13 +4,14 @@
   (:import [org.jivesoftware.smack.filter PacketFilter])
   (:use digest))
 
-(def *host* "maccie")
+(defn localhost []
+  (-> (java.net.InetAddress/getLocalHost) .getHostName))
 
-(defn with-host-name [user] 
+(defn with-host-name [user host] 
   "Append the host name if needed"
-  (if (.endsWith user (str "@" *host*))
+  (if (.endsWith user (str "@" host))
     user
-    (str user "@" *host*)))
+    (str user "@" host)))
 
 (defn disconnect [^Connection con] 
   (when con
@@ -18,9 +19,7 @@
 
 (defn connect 
   ([server] 
-   (doto (XMPPConnection. server) .connect))
-  ([]
-   (connect *host*)))
+   (doto (XMPPConnection. server) .connect)))
 
 (defn login [con user password] 
   (doto con (.login user password)))
@@ -60,19 +59,15 @@
   (-> (.getRoster con) (.createEntry other-id nil nil)))
 
 (defn make-friends! 
-  "Make the users created by create-tmp-accounts become friends.
-  When no server is given *host* is used."
-  ([user-map]
-   (make-friends! *host* user-map))
+  "Make the users created by create-tmp-accounts become friends."
   ([server user-map]
    (let [me (:me user-map)
          other (:other user-map)
-         my-con (connect-and-login *host* (:id me) (:password me))
-         other-con (connect-and-login *host* (:id other) (:password other))]
+         my-con (connect-and-login server (:id me) (:password me))
+         other-con (connect-and-login server (:id other) (:password other))]
      (make-friend! my-con (-> other :id with-host-name))
      (make-friend! other-con (-> me :id with-host-name))
      (map disconnect [my-con other-con]))))
-
 
 (defn create-tmp-connection! [server]
   "Main entry point for the 'temp' user workflow.
