@@ -16,11 +16,6 @@
   (when con
     (.disconnect con)))
 
-(defmacro with-connection [con & body] 
-  `(do
-     ~@body
-     (disconnect ~con)))
-
 (defn connect 
   ([server] 
    (doto (XMPPConnection. server) .connect))
@@ -72,8 +67,22 @@
   ([server user-map]
    (let [me (:me user-map)
          other (:other user-map)
-         my-con (connect-and-login @host (:id me) (:password me))
-         other-con (connect-and-login @host (:id other) (:password other))]
+         my-con (connect-and-login *host* (:id me) (:password me))
+         other-con (connect-and-login *host* (:id other) (:password other))]
      (make-friend! my-con (-> other :id with-host-name))
-     (make-friend! other-con (-> me :id with-host-name)))))
+     (make-friend! other-con (-> me :id with-host-name))
+     (map disconnect [my-con other-con]))))
 
+
+(defn create-tmp-connection! [server]
+  "Main entry point for the 'temp' user workflow.
+  Creates two temp users adds both to each others roster and return a map of the values:
+  :me - the user which is to be logged into at the local client.
+  :other - the user who receives the id to log in as the transmission partner.
+  :server - the server address."
+  (let [init-con (connect server)
+        accounts (create-tmp-accounts! init-con)]
+    (do
+      (make-friends! server accounts)
+      (disconnect init-con)
+      (assoc accounts :server server))))
