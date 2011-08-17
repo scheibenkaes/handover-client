@@ -65,8 +65,9 @@
          other (:other user-map)
          my-con (connect-and-login server (:id me) (:password me))
          other-con (connect-and-login server (:id other) (:password other))]
-     (make-friend! my-con (-> other :id with-host-name))
-     (make-friend! other-con (-> me :id with-host-name))
+     (make-friend! my-con (-> other :id (with-host-name server)))
+     (make-friend! other-con (-> me :id (with-host-name server)))
+     (Thread/sleep 2000)
      (map disconnect [my-con other-con]))))
 
 (defn create-tmp-connection! [server]
