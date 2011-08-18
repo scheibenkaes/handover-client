@@ -84,15 +84,20 @@
   (mig-panel
     :constraints ["" "[120]25[][]" "[][][]15[][]"]
     :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1"][(action :icon (resource "icons/applications-system.png") :tip "Passen Sie die Einstellungen des Programms an." :handler (fn [& _] (alert "Diese Funktionalität steht noch nicht zur Verfügung."))) "wrap"]
-            [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." ""][(label :icon (resource "icons/spinner.gif") :visible? false :id :spinner) "wrap"]
-            [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))) "growx"]["Eine Datei empfangen." "span 2"]
+            [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png") :tip "Laden Sie eine Person ein, um mit ihr Dateien auszutauschen.") "growx"]["<html>Eine Datei versenden.<br/><small>Verschicken Sie dazu eine Einladung an den gewünschten Partner</small></html>" ""][(label :icon (resource "icons/spinner.gif") :visible? false :id :spinner) "wrap"]
+            [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))
+                     :tip "Klicken Sie hier, wenn Sie eine Einladung zu Austauschen von Daten erhalten haben.") "growx"]
+            ["<html>Eine Datei empfangen.<br/><small>Akzeptieren Sie eine Einladung zum Datenaustausch.</small></html>" "span 2"]
             [:separator "wrap,growx"]
             [(action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))) "growx"]["Das Programm beenden" "span 2"]]))
+
+(defn center! [f]
+  (doto f (.setLocationRelativeTo nil)))
 
 (defn show-main-window [] 
   (invoke-later 
     (show-panel-in-main-frame welcome-panel)
-    (-> main-frame pack! show!)))
+    (-> main-frame center! pack! show!)))
 
 (defn -main [& args]
   (native!)
