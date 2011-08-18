@@ -1,8 +1,13 @@
 (ns handover-client.core
   (:use [seesaw core mig])
   (:use clojure.java.io)
+  (:require [clojure.contrib.logging :as logging])
   (:require [handover-client.connection :as con])
   (:gen-class))
+
+(defn display-error [msg exc]
+  (logging/debug msg exc)
+  (alert (str "Ein Fehler ist aufgetreten: " (.getMessage exc))))
 
 (def 
   ^{:doc "All required user information about me and my companion."} 
