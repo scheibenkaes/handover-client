@@ -27,7 +27,7 @@
   server-configuration
   (agent 
     {:server-host (con/localhost)} 
-    :error-handler (fn [_ e] (alert (str "Ein Fehler ist aufgetreten: " (.getMessage e))))))
+    :error-handler (fn [_ e] (display-error "Ein Fehler ist aufgetreten: " e))))
 
 (def main-frame
   (frame :title "Handover" :size [800 :by 600] :on-close :exit))
@@ -41,11 +41,21 @@
 
 (declare welcome-panel send-panel receive-panel)
 
+(defn create-accounts []
+  (try
+    (let [tmp-account (con/create-tmp-connection! (:server-host @server-configuration))]
+      )
+    (catch Exception e
+      (display-error "Beim Verbindungsaufbau mit dem Server ist ein Fehler aufgetreten:" e))
+    (finally
+      (config! (select welcome-panel [:*]) :enabled? true)
+      (config! (select welcome-panel [:#spinner]) :visible? false))))
+
 (defn user-wants-to-send [] 
   (invoke-later
-    (dosync
-      (alter users-information (fn [& _] (con/create-tmp-connection! (:server-host @server-configuration))))
-      (show-panel-in-main-frame send-panel))))
+    (config! (select welcome-panel [:*]) :enabled? false)
+    (config! (select welcome-panel [:#spinner]) :visible? true :enabled? true)
+    (.start (Thread. create-accounts))))
 
 (def receive-panel 
   (mig-panel
@@ -69,7 +79,7 @@
   (mig-panel
     :constraints ["" "[120]25[][]" "[][][]15[][]"]
     :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1"][(action :icon (resource "icons/applications-system.png") :tip "Passen Sie die Einstellungen des Programms an." :handler (fn [& _] (alert "Diese Funktionalität steht noch nicht zur Verfügung."))) "wrap"]
-            [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." ""][(label :icon (resource "icons/spinner.gif") :visible? false) "wrap"]
+            [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." ""][(label :icon (resource "icons/spinner.gif") :visible? false :id :spinner) "wrap"]
             [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))) "growx"]["Eine Datei empfangen." "span 2"]
             [:separator "wrap,growx"]
             [(action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))) "growx"]["Das Programm beenden" "span 2"]]))
