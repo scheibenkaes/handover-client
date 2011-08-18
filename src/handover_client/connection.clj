@@ -14,8 +14,7 @@
     (str user "@" host)))
 
 (defn disconnect [^Connection con] 
-  (when con
-    (.disconnect con)))
+  (.disconnect con))
 
 (defn connect 
   ([server] 
@@ -40,7 +39,7 @@
 (defn generate-new-id [] 
   (->> (System/nanoTime) (str (get-system-property "user.home") (rand-int 100)) create-id))
 
-(defn create-tmp-accounts! [con]
+(defn- create-tmp-accounts! [con]
   "Create two tmp accounts."
   (let [other (generate-new-id)
         me (str other "-1")
@@ -58,7 +57,7 @@
   It must be logged in."
   (-> (.getRoster con) (.createEntry other-id nil nil)))
 
-(defn make-friends! 
+(defn- make-friends! 
   "Make the users created by create-tmp-accounts become friends."
   ([server user-map]
    (let [me (:me user-map)
@@ -67,6 +66,7 @@
          other-con (connect-and-login server (:id other) (:password other))]
      (make-friend! my-con (-> other :id (with-host-name server)))
      (make-friend! other-con (-> me :id (with-host-name server)))
+     ; TODO sync this!!!
      (Thread/sleep 2000)
      (map disconnect [my-con other-con]))))
 
