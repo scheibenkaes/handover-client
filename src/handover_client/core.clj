@@ -7,14 +7,14 @@
 
 (defn display-error [msg exc]
   (logging/debug msg exc)
-  (alert (str "Ein Fehler ist aufgetreten: " (.getMessage exc))))
+  (alert (str msg " " (.getMessage exc))))
 
-(def 
-  ^{:doc "All required user information about me and my companion."} 
+(def
+  ^{:doc "All required user information about me and my companion."}
   users-information
-  (ref 
-    nil 
-    :error-handler (fn [_ e] (alert (str "Ein Fehler ist aufgetreten: " (.getMessage e))) (.printStackTrace e))))
+  (ref
+    nil
+    :error-handler (fn [_ e] (display-error "Ein Fehler ist aufgetreten" e))))
 
 (def other-client (atom nil))
 
@@ -22,7 +22,7 @@
   (when-let [id (-> n :other :id)]
     (reset! other-client id)))
 
-(def 
+(def
   ^{:doc "Information regarding the targeted server. :server-host - host to connect to"} 
   server-configuration
   (agent 
@@ -56,7 +56,7 @@
             [:separator "span 2"]
             [(action :name "Ok") ""]]))
 
-(def send-panel 
+(def send-panel
   (mig-panel
     :constraints ["" "[center][300][center]" "[][]25[][]"]
     :items [[(label :text "Teilen Sie Ihrem Partner diese ID mit." :font bold-font) "span 3,wrap,align left"]
@@ -79,7 +79,9 @@
     (show-panel-in-main-frame welcome-panel)
     (-> main-frame pack! show!)))
 
-(defn -main [& args] 
+(defn -main [& args]
   (native!)
   (add-watch users-information ::user-id users-information-update-handler)
   (show-main-window))
+
+
