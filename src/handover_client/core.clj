@@ -41,7 +41,7 @@
 
 (declare welcome-panel send-panel receive-panel)
 
-(defn sending-requested [] 
+(defn user-wants-to-send [] 
   (invoke-later
     (dosync
       (alter users-information (fn [& _] (con/create-tmp-connection! (:server-host @server-configuration))))
@@ -54,7 +54,7 @@
             [(text) "span 4,growx,wrap"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
             [:separator "span 2"]
-            [(action :name "Ok") ""]]))
+            [(action :name "Ok" :enabled? false) ""]]))
 
 (def send-panel
   (mig-panel
@@ -67,9 +67,9 @@
 
 (def welcome-panel 
   (mig-panel
-    :constraints ["" "[120]25[][]" "[][][]15[]"]
-    :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1"][(action :icon (resource "icons/applications-system.png") :tip "Passen Sie die Einstellungen des Programms an.") "wrap"]
-            [(action :handler (fn [_] (sending-requested)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." "wrap"]
+    :constraints ["" "[120]25[][]" "[][][]15[][]"]
+    :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1"][(action :icon (resource "icons/applications-system.png") :tip "Passen Sie die Einstellungen des Programms an." :handler (fn [& _] (alert "Diese Funktionalität steht noch nicht zur Verfügung."))) "wrap"]
+            [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png")) "growx"]["Eine Datei versenden." ""][(label :icon (resource "icons/spinner.gif") :visible? false) "wrap"]
             [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))) "growx"]["Eine Datei empfangen." "span 2"]
             [:separator "wrap,growx"]
             [(action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))) "growx"]["Das Programm beenden" "span 2"]]))
