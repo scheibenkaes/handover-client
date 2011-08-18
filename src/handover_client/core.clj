@@ -41,10 +41,15 @@
 
 (declare welcome-panel send-panel receive-panel)
 
+(defn display-send-invitation-view [con-data]
+  (config! (select send-panel [:#other-id]) :text (-> con-data :other :id))
+  (config! (select send-panel [:#proceed]) :enabled? true :listen [:mouse-clicked println])
+  (show-panel-in-main-frame send-panel))
+
 (defn create-accounts []
   (try
-    (let [tmp-account (con/create-tmp-connection! (:server-host @server-configuration))]
-      )
+    (let [connection-data (con/create-tmp-connection! (:server-host @server-configuration))]
+      (display-send-invitation-view connection-data))
     (catch Exception e
       (display-error "Beim Verbindungsaufbau mit dem Server ist ein Fehler aufgetreten:" e))
     (finally
@@ -52,7 +57,7 @@
       (config! (select welcome-panel [:#spinner]) :visible? false))))
 
 (defn user-wants-to-send [] 
-  (invoke-later
+  (invoke-now
     (config! (select welcome-panel [:*]) :enabled? false)
     (config! (select welcome-panel [:#spinner]) :visible? true :enabled? true)
     (.start (Thread. create-accounts))))
@@ -72,8 +77,8 @@
     :items [[(label :text "Teilen Sie Ihrem Partner diese ID mit." :font bold-font) "span 3,wrap,align left"]
             ["#" ""][(text :text "TODO" :editable? false :id :other-id) "growx"][(action :icon (resource "icons/edit-paste.png") :tip "Die ID in die Zwischenablage kopieren.") "wrap,growx"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
-            [(label :text "Verbinde") ""]
-            [(action :name "Weiter" :enabled? false) "growx,wrap"] ]))
+            [:separator ""]
+            [(button :text "Weiter" :enabled? false :id :proceed) "growx,wrap"] ]))
 
 (def welcome-panel 
   (mig-panel
