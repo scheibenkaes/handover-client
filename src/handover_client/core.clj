@@ -1,9 +1,9 @@
 (ns handover-client.core
   (:use [seesaw core mig])
   (:use clojure.java.io)
+  (:require [handover-client.connection :as con])
   (:gen-class))
 
-(def connection-data {:generated-id "asdf1234"})
 
 (def main-frame
   (frame :title "Handover" :size [800 :by 600] :on-close :exit))
