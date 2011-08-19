@@ -76,10 +76,10 @@
     :constraints ["insets 0 0 0 0" "[][][][][]"]
     :items [
             [(toolbar :items [send-action zip-action :separator exit-action]) "span 4,wrap"]
-            [(mig-panel :constraints ["" "[200][][]" "[][]"] 
+            [(mig-panel :constraints ["insets 5 5 5 5" "[200][][]" "[][]"] 
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
-            [(mig-panel :constraints ["" "[200][][]" "[400][][]"] 
+            [(mig-panel :constraints ["insets 5 5 5 5" "[200][][]" "[400][][]"] 
                         :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "") "span 2,growx"] [(button :text "Senden") ""]]) "span 1 3"]
             ]))
 
