@@ -75,11 +75,11 @@
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[][][][][]"]
     :items [
-            [(toolbar :items [send-action zip-action :separator exit-action]) "span 4,wrap"]
-            [(mig-panel :constraints ["insets 5 5 5 5" "[200][][]" "[][]"] 
+            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"]["Verbunden" "wrap,align right"]
+            [(mig-panel :constraints ["insets 5 5 5 5" "[350][][]" "[][]"] 
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
-            [(mig-panel :constraints ["insets 5 5 5 5" "[200][][]" "[400][][]"] 
+            [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
                         :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "") "span 2,growx"] [(button :text "Senden") ""]]) "span 1 3"]
             ]))
 
