@@ -30,7 +30,7 @@
     :error-handler (fn [_ e] (display-error "Ein Fehler ist aufgetreten: " e))))
 
 (def main-frame
-  (frame :title "Handover" :size [800 :by 600] :on-close :exit))
+  (frame :title "Handover" :size [800 :by 600] :on-close :exit :resizable? false))
 
 (defn show-panel-in-main-frame [p] 
   (-> main-frame 
@@ -61,6 +61,27 @@
     (config! (select welcome-panel [:*]) :enabled? false)
     (config! (select welcome-panel [:#spinner]) :visible? true :enabled? true)
     (.start (Thread. create-accounts))))
+
+(def exit-action
+  (action :icon (resource "icons/system-log-out.png")))
+
+(def zip-action
+  (action :icon (resource "icons/package.png")))
+
+(def send-action
+  (action :icon (resource "icons/go-next.png")))
+
+(def transfer-panel
+  (mig-panel 
+    :constraints ["insets 0 0 0 0" "[][][][][]"]
+    :items [
+            [(toolbar :items [send-action zip-action :separator exit-action]) "span 4,wrap"]
+            [(mig-panel :constraints ["" "[200][][]" "[][]"] 
+                        :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
+                                ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
+            [(mig-panel :constraints ["" "[200][][]" "[400][][]"] 
+                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "") "span 2,growx"] [(button :text "Senden") ""]]) "span 1 3"]
+            ]))
 
 (def receive-panel 
   (mig-panel
@@ -96,7 +117,7 @@
 
 (defn show-main-window [] 
   (invoke-later 
-    (show-panel-in-main-frame welcome-panel)
+    (show-panel-in-main-frame transfer-panel)
     (-> main-frame center! pack! show!)))
 
 (defn -main [& args]
