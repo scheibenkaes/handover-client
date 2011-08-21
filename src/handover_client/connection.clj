@@ -1,6 +1,6 @@
 (ns handover-client.connection
   (:use [clojure.contrib.properties :only [get-system-property]])
-  (:import [org.jivesoftware.smack Connection XMPPConnection XMPPException RosterListener PacketListener])
+  (:import [org.jivesoftware.smack Connection XMPPConnection XMPPException Roster PacketListener])
   (:import [org.jivesoftware.smack.filter PacketFilter])
   (:require [clojure.contrib.logging :as log])
   (:use digest))
@@ -63,6 +63,17 @@
 (defn roster [^Connection con]
   (.getRoster con))
 
+(defn roster-entries [^Roster ros]
+  (-> (.getEntries ros) seq))
+
+(defn wait-for-friending [me other]
+  (let [my-roster (roster me)
+        other-roster (roster other)]
+    (.reload my-roster)
+    (.reload other-roster)
+    (when (every? empty? (map roster-entries [my-roster other-roster]))
+      (recur me other))))
+
 (defn- make-friends! 
   "Make the users created by create-tmp-accounts become friends."
   ([server user-map]
@@ -72,8 +83,7 @@
          other-con (connect-and-login server (:id other) (:password other))]
      (make-friend! my-con (-> other :id (with-host-name server)))
      (make-friend! other-con (-> me :id (with-host-name server)))
-     ; TODO sync this!!!
-     (Thread/sleep 2000)
+     (wait-for-friending my-con other-con)
      (dorun (map disconnect [my-con other-con])))))
 
 (defn create-tmp-connection! [server]
