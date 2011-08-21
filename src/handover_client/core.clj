@@ -2,25 +2,13 @@
   (:use [seesaw core mig])
   (:use clojure.java.io)
   (:require [clojure.contrib.logging :as logging])
-  (:require [handover-client.connection :as con])
+  (:require [handover-client.connection :as con]
+            [handover-client.chat :as chat])
   (:gen-class))
 
 (defn display-error [msg exc]
   (logging/debug msg exc)
   (alert (str msg " " (.getMessage exc))))
-
-(def
-  ^{:doc "All required user information about me and my companion."}
-  users-information
-  (ref
-    nil
-    :error-handler (fn [_ e] (display-error "Ein Fehler ist aufgetreten" e))))
-
-(def other-client (atom nil))
-
-(defn users-information-update-handler [_ _ _ n]
-  (when-let [id (-> n :other :id)]
-    (reset! other-client id)))
 
 (def
   ^{:doc "Information regarding the targeted server. :server-host - host to connect to"} 
@@ -125,7 +113,5 @@
 
 (defn -main [& args]
   (native!)
-  (add-watch users-information ::user-id users-information-update-handler)
   (show-main-window))
-
 
