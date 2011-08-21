@@ -47,7 +47,7 @@
 
 (defn get-id-from-clipboard []
   (when-let [cp-content (get-str)]
-    (when (.startsWith cp-content "TEMP-") cp-content)))
+    (when (.startsWith cp-content "temp-") cp-content)))
 
 (defn user-wants-to-receive []
   (config! (select receive-panel [:#rec-other]) :text (get-id-from-clipboard))
@@ -61,7 +61,8 @@
 
 (defn user-wants-to-transfer [me other server]
   (try
-    (let [con (con/connect-and-login server (:id me) (:password me))]
+    (let [con (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
+      (println me other server)
       (chat/init! con (:id other))
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
@@ -96,10 +97,10 @@
             [:separator "span 2"]
             [(action :name "Ok" 
                      :handler (fn [_] 
-                                (let [me (-> (select receive-panel [:#rec-other]) :text)]
+                                (let [me (-> (select receive-panel [:#rec-other]) text)]
                                   (user-wants-to-transfer 
-                                    me
-                                    (str me "-1")
+                                    {:id me :password me}
+                                    {:id (str me "-1")}
                                     (:server-host @server-configuration))))) ""]]))
 
 (def send-panel

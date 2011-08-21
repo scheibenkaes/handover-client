@@ -2,6 +2,7 @@
   (:use [clojure.contrib.properties :only [get-system-property]])
   (:import [org.jivesoftware.smack Connection XMPPConnection XMPPException RosterListener PacketListener])
   (:import [org.jivesoftware.smack.filter PacketFilter])
+  (:require [clojure.contrib.logging :as log])
   (:use digest))
 
 (defn localhost []
@@ -31,7 +32,9 @@
 
 (defn create-user! [connection username password] 
   (if-let [am (account-manager connection)]
-    (do (.createAccount am username password) :ok)))
+    (do 
+      (log/debug (str "created account: " username " pw: " password))
+      (.createAccount am username password) :ok)))
 
 (defn create-id [in] 
   (->> in (digest "SHA1") (take 8) (apply str)))
@@ -43,9 +46,9 @@
   "Create two tmp accounts."
   (let [other (generate-new-id)
         me (str other "-1")
-        [tmp-other tmp-me] (map #(str "TEMP-" %) [other me])
-        passwd (generate-new-id)
-        other-passwd other
+        [tmp-other tmp-me] (map #(str "temp-" %) [other me])
+        passwd tmp-me
+        other-passwd tmp-other
         accounts [[con tmp-me passwd] [con tmp-other other-passwd]]]
     (when (not-any? nil? (map #(apply create-user! %) accounts))
       {:me {:id tmp-me :password passwd}
@@ -68,7 +71,7 @@
      (make-friend! other-con (-> me :id (with-host-name server)))
      ; TODO sync this!!!
      (Thread/sleep 2000)
-     (map disconnect [my-con other-con]))))
+     (dorun (map disconnect [my-con other-con])))))
 
 (defn create-tmp-connection! [server]
   "Main entry point for the 'temp' user workflow.
