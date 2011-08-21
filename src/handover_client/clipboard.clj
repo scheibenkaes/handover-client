@@ -3,9 +3,11 @@
           [java.awt.datatransfer DataFlavor]))
 
 (defn get-str []
-  (-> 
-    (Toolkit/getDefaultToolkit) 
-    .getSystemClipboard 
-    (.getContents nil) 
-    (.getTransferData DataFlavor/stringFlavor) 
-    str))
+  (try
+    (-> 
+      (Toolkit/getDefaultToolkit) 
+      .getSystemClipboard 
+      (.getContents nil) 
+      (.getTransferData DataFlavor/stringFlavor) 
+      str)
+    (catch Exception _ nil)))
