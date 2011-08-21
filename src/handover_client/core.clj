@@ -27,7 +27,7 @@
 
 (def bold-font "ARIAL-BOLD-18")
 
-(declare welcome-panel send-panel receive-panel)
+(declare welcome-panel send-panel receive-panel transfer-panel)
 
 (defn display-send-invitation-view [con-data]
   (config! (select send-panel [:#other-id]) :text (-> con-data :other :id))
@@ -49,6 +49,13 @@
     (config! (select welcome-panel [:*]) :enabled? false)
     (config! (select welcome-panel [:#spinner]) :visible? true :enabled? true)
     (.start (Thread. create-accounts))))
+
+(defn user-wants-to-transfer [me other server]
+  (try
+    (let [con (con/connect-and-login (:id me) (:password me))]
+      (chat/init! con (:id other))
+      (show-panel-in-main-frame transfer-panel))
+    (catch Exception e (display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
   (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))))
@@ -75,10 +82,16 @@
   (mig-panel
     :constraints ["" "[][][][]"]
     :items [[(label :text "Bitte geben Sie die ID ein, die Ihnen ihr Partner übermittelt hat." :font bold-font) "wrap,span 2"]
-            [(text) "span 4,growx,wrap"]
+            [(text :id :rec-other) "span 4,growx,wrap"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
             [:separator "span 2"]
-            [(action :name "Ok" :enabled? false) ""]]))
+            [(action :name "Ok" 
+                     :handler (fn [_] 
+                                (let [me (-> (select receive-panel [:#rec-other]) first :text)]
+                                  (user-wants-to-transfer 
+                                    me
+                                    (str me "-1")
+                                    (:server-host @server-configuration))))) ""]]))
 
 (def send-panel
   (mig-panel
