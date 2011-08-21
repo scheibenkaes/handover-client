@@ -1,6 +1,7 @@
 (ns handover-client.core
   (:use [seesaw core mig])
   (:use clojure.java.io)
+  (:use [handover-client.clipboard :only [get-str put-str]])
   (:require [clojure.contrib.logging :as logging])
   (:require [handover-client.connection :as con]
             [handover-client.chat :as chat])
@@ -44,6 +45,14 @@
       (config! (select welcome-panel [:*]) :enabled? true)
       (config! (select welcome-panel [:#spinner]) :visible? false))))
 
+(defn get-id-from-clipboard []
+  (when-let [cp-content (get-str)]
+    (when (.startsWith cp-content "TEMP-") cp-content)))
+
+(defn user-wants-to-receive []
+  (config! (select receive-panel [:#rec-other]) :text (get-id-from-clipboard))
+  (show-panel-in-main-frame receive-panel))
+
 (defn user-wants-to-send [] 
   (invoke-now
     (config! (select welcome-panel [:*]) :enabled? false)
@@ -52,7 +61,7 @@
 
 (defn user-wants-to-transfer [me other server]
   (try
-    (let [con (con/connect-and-login (:id me) (:password me))]
+    (let [con (con/connect-and-login server (:id me) (:password me))]
       (chat/init! con (:id other))
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
@@ -87,7 +96,7 @@
             [:separator "span 2"]
             [(action :name "Ok" 
                      :handler (fn [_] 
-                                (let [me (-> (select receive-panel [:#rec-other]) first :text)]
+                                (let [me (-> (select receive-panel [:#rec-other]) :text)]
                                   (user-wants-to-transfer 
                                     me
                                     (str me "-1")
@@ -97,7 +106,9 @@
   (mig-panel
     :constraints ["" "[center][300][center]" "[][]25[][]"]
     :items [[(label :text "Teilen Sie Ihrem Partner diese ID mit." :font bold-font) "span 3,wrap,align left"]
-            ["#" ""][(text :text "TODO" :editable? false :id :other-id) "growx"][(action :icon (resource "icons/edit-paste.png") :tip "Die ID in die Zwischenablage kopieren.") "wrap,growx"]
+            ["#" ""][(text :text "TODO" :editable? false :id :other-id) "growx"]
+            [(action :icon (resource "icons/edit-paste.png") :tip "Die ID in die Zwischenablage kopieren." 
+                     :handler (fn [_] (let [id (-> (select send-panel [:#other-id]) text)](put-str id)))) "wrap,growx"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
             [:separator ""]
             [(button :text "Weiter" :enabled? false :id :proceed) "growx,wrap"] ]))
@@ -110,7 +121,7 @@
     :constraints ["" "[120]25[][]" "[][][]15[][]"]
     :items [[(label :text "Was möchten Sie tun?" :font bold-font) "span 2 1"][(action :icon (resource "icons/applications-system.png") :tip "Passen Sie die Einstellungen des Programms an." :handler not-implemented-handler) "wrap"]
             [(action :handler (fn [_] (user-wants-to-send)) :icon (resource "icons/go-next.png") :tip "Laden Sie eine Person ein, um mit ihr Dateien auszutauschen.") "growx"]["<html>Eine Datei versenden.<br/><small>Verschicken Sie dazu eine Einladung an den gewünschten Partner</small></html>" ""][(label :icon (resource "icons/spinner.gif") :visible? false :id :spinner) "wrap"]
-            [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (show-panel-in-main-frame receive-panel))
+            [(action :icon (resource "icons/go-previous.png") :handler (fn [e] (user-wants-to-receive))
                      :tip "Klicken Sie hier, wenn Sie eine Einladung zu Austauschen von Daten erhalten haben.") "growx"]
             ["<html>Eine Datei empfangen.<br/><small>Akzeptieren Sie eine Einladung zum Datenaustausch.</small></html>" "span 2"]
             [:separator "wrap,growx"]
