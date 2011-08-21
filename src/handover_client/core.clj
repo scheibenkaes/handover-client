@@ -63,13 +63,13 @@
     (.start (Thread. create-accounts))))
 
 (def exit-action
-  (action :icon (resource "icons/system-log-out.png")))
+  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))))
 
 (def zip-action
-  (action :icon (resource "icons/package.png")))
+  (action :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
 
 (def send-action
-  (action :icon (resource "icons/go-next.png")))
+  (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
 
 (def transfer-panel
   (mig-panel 
@@ -110,7 +110,7 @@
                      :tip "Klicken Sie hier, wenn Sie eine Einladung zu Austauschen von Daten erhalten haben.") "growx"]
             ["<html>Eine Datei empfangen.<br/><small>Akzeptieren Sie eine Einladung zum Datenaustausch.</small></html>" "span 2"]
             [:separator "wrap,growx"]
-            [(action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))) "growx"]["Das Programm beenden" "span 2"]]))
+            [exit-action "growx"]["Das Programm beenden" "span 2"]]))
 
 (defn center! [f]
   (doto f (.setLocationRelativeTo nil)))
