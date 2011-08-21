@@ -60,6 +60,9 @@
   It must be logged in."
   (-> (.getRoster con) (.createEntry other-id nil nil)))
 
+(defn roster [^Connection con]
+  (.getRoster con))
+
 (defn- make-friends! 
   "Make the users created by create-tmp-accounts become friends."
   ([server user-map]
