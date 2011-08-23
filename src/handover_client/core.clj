@@ -5,19 +5,13 @@
   (:require [clojure.contrib.logging :as logging])
   (:require [handover-client.connection :as con]
             [handover-client.presence :as presence]
+            [handover-client.state :as state]
             [handover-client.chat :as chat])
   (:gen-class))
 
 (defn display-error [msg exc]
   (logging/debug msg exc)
   (alert (str msg " " (.getMessage exc))))
-
-(def
-  ^{:doc "Information regarding the targeted server. :server-host - host to connect to"} 
-  server-configuration
-  (agent 
-    {:server-host (con/localhost)} 
-    :error-handler (fn [_ e] (display-error "Ein Fehler ist aufgetreten: " e))))
 
 (def main-frame
   (frame :title "Handover" :size [800 :by 600] :on-close :exit :resizable? false))
@@ -38,7 +32,7 @@
 
 (defn create-accounts []
   (try
-    (let [connection-data (con/create-tmp-connection! (:server-host @server-configuration))]
+    (let [connection-data (con/create-tmp-connection! (:server-host @state/server-configuration))]
       (display-send-invitation-view connection-data))
     (catch Exception e
       (display-error "Beim Verbindungsaufbau mit dem Server ist ein Fehler aufgetreten:" e))
@@ -108,7 +102,7 @@
                                   (user-wants-to-transfer 
                                     {:id me :password me}
                                     {:id (str me "-1")}
-                                    (:server-host @server-configuration))))) ""]]))
+                                    (:server-host @state/server-configuration))))) ""]]))
 
 (def send-panel
   (mig-panel
@@ -123,7 +117,7 @@
                                                        (user-wants-to-transfer 
                                                          {:id (str other-id "-1") :password (str other-id "-1")}
                                                          {:id other-id}
-                                                         (:server-host @server-configuration))))) "growx,wrap"]]))
+                                                         (:server-host @state/server-configuration))))) "growx,wrap"]]))
 
 (def not-implemented-handler
   (fn [& _] (alert "Diese Funktionalität steht leider noch nicht zur Verfügung.")))
