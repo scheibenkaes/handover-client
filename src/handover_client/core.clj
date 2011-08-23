@@ -62,7 +62,7 @@
 (defn user-wants-to-transfer [me other server]
   (try
     (let [con (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
-      (println me other server)
+      (logging/debug (str "User wants to transfer: " me other server))
       (chat/init! con (:id other))
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
@@ -76,6 +76,9 @@
 (def send-action
   (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
 
+(defn send-chat-message []
+  (-> (select transfer-panel [:#msg-field]) text chat/send-message))
+
 (def transfer-panel
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[][][][][]"]
@@ -85,7 +88,7 @@
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
-                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "") "span 2,growx"] [(button :text "Senden") ""]]) "span 1 3"]
+                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"] [(action :name "Senden" :handler (fn [_] (send-chat-message))) ""]]) "span 1 3"]
             ]))
 
 (def receive-panel 
