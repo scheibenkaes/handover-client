@@ -6,14 +6,14 @@
 
 (def messages (ref []))
 
-(defrecord Message [time text])
+(defrecord Message [time text orig-message])
 
 (def message-listener
   (proxy [org.jivesoftware.smack.MessageListener][]
     (processMessage 
       [this _ msg]
       (dosync
-        (alter messages conj (Message. (System/currentTimeMillis) (.getBody msg)))))))
+        (alter messages conj (Message. (System/currentTimeMillis) (.getBody msg) msg))))))
 
 (defn send-message [^String msg]
   (.sendMessage @chat msg))
