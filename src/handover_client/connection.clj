@@ -17,9 +17,19 @@
 (defn disconnect [^Connection con] 
   (.disconnect con))
 
-(defn connect 
-  ([server] 
-   (doto (XMPPConnection. server) .connect)))
+(defn create-connection [server]
+  (XMPPConnection. server))
+
+(defmulti connect class)
+
+(defmethod connect String
+  [server] 
+  (connect (create-connection server)))
+
+(defmethod connect Connection
+  [con]
+  (.connect con)
+  con)
 
 (defn login [con user password] 
   (doto con (.login user password)))
@@ -31,7 +41,7 @@
   (when con (.getAccountManager con)))
 
 (defn create-user! [connection username password] 
-  (if-let [am (account-manager connection)]
+  (when-let [am (account-manager connection)]
     (do 
       (log/debug (str "created account: " username " pw: " password))
       (.createAccount am username password) :ok)))
