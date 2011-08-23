@@ -88,7 +88,10 @@
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
-                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"] [(action :name "Senden" :handler (fn [_] (send-chat-message))) ""]]) "span 1 3"]
+                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
+                                [(action :name "Senden" :handler (fn [_] 
+                                                                   (send-chat-message)
+                                                                   (text! (select transfer-panel [:#msg-field]) ""))) ""]]) "span 1 3"]
             ]))
 
 (def receive-panel 
@@ -115,7 +118,11 @@
                      :handler (fn [_] (let [id (-> (select send-panel [:#other-id]) text)](put-str id)))) "wrap,growx"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
             [:separator ""]
-            [(button :text "Weiter" :enabled? false :id :proceed) "growx,wrap"] ]))
+            [(action :name "Weiter" :handler (fn [_] (let [other-id (-> (select send-panel [:#other-id]) text)]
+                                                       (user-wants-to-transfer 
+                                                         {:id (str other-id "-1") :password (str other-id "-1")}
+                                                         {:id other-id}
+                                                         (:server-host @server-configuration))))) "growx,wrap"]]))
 
 (def not-implemented-handler
   (fn [& _] (alert "Diese Funktionalität steht leider noch nicht zur Verfügung.")))
