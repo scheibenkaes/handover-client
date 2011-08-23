@@ -4,6 +4,7 @@
   (:use [handover-client.clipboard :only [get-str put-str]])
   (:require [clojure.contrib.logging :as logging])
   (:require [handover-client.connection :as con]
+            [handover-client.presence :as presence]
             [handover-client.chat :as chat])
   (:gen-class))
 
@@ -83,7 +84,7 @@
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[][][][][]"]
     :items [
-            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"]["Verbunden" "wrap,align right"]
+            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"][(label :icon presence/available-icon) "wrap,align center"]
             [(mig-panel :constraints ["insets 5 5 5 5" "[350][][]" "[][]"] 
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
