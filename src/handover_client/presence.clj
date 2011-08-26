@@ -7,10 +7,17 @@
 
 (def not-available-icon (resource "icons/not-available.png"))
 
-(defn available? [con user]
-  (if-let [presence (.getPresence (roster con) user)]
-    (= Presence$Type/available presence)
-    false))
+(defn presence [ros user]
+  (.getPresence ros user))
+
+(defn available? 
+  ([^Presence pres]
+   (.isAvailable pres))
+
+  ([con user]
+   (if-let [pres (presence (roster con) user)]
+     (available? pres)
+     false)))
 
 (defn availability->icon [con user]
   (if (available? con user)
