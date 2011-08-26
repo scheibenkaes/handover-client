@@ -1,6 +1,8 @@
 (ns handover-client.presence
   (:use [clojure.java.io :only [resource]])
   (:use [handover-client.connection :only [roster]])
+  (:require [clojure.contrib.logging :as log])
+  (:import [org.jivesoftware.smack RosterListener])
   (:import [org.jivesoftware.smack.packet Presence Presence$Type]))
 
 (def available-icon (resource "icons/available.png"))
@@ -19,6 +21,17 @@
      (available? pres)
      false)))
 
+(defn watch-availability! [rost cb]
+  "Adds a listener to the given roster and calls (cb new-availablity) when the state changes."
+  (.addRosterListener rost
+                      (proxy [RosterListener][]
+                        (entriesAdded [this added] (log/info (str "Added to roster " added)))
+                        (entriesDeleted [this deleted] (log/info (str "Deleted from roster " deleted)))
+                        (entriesUpdated [this updated] (log/info (str "Updated in roster " updated)))
+                        (presenceChanged [this presence] 
+                                         (log/info (str "Presence changed " presence))
+                                         (let [new-presence (if (available? presence) :available :unavailable)]
+                                           (cb new-presence))))))
 (defn availability->icon [con user]
   (if (available? con user)
     available-icon
