@@ -11,7 +11,7 @@
 (def message-listener
   (proxy [org.jivesoftware.smack.MessageListener][]
     (processMessage 
-      [this _ msg]
+      [_ msg]
       (dosync
         (alter messages conj (Message. (System/currentTimeMillis) (.getBody msg) msg))))))
 
