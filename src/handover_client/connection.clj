@@ -2,6 +2,7 @@
   (:use [clojure.contrib.properties :only [get-system-property]])
   (:import [org.jivesoftware.smack Connection XMPPConnection XMPPException Roster PacketListener])
   (:import [org.jivesoftware.smack.filter PacketFilter])
+  (:import [org.jivesoftware.smack.packet RosterPacket$ItemType])
   (:require [clojure.contrib.logging :as log])
   (:use digest))
 
@@ -32,7 +33,7 @@
   con)
 
 (defn login [con user password] 
-  (doto con (.login user password)))
+  (doto con (.login user password "handover")))
 
 (defn connect-and-login [server user password] 
   (-> (connect server) (login user password)))
@@ -76,12 +77,17 @@
 (defn roster-entries [^Roster ros]
   (-> (.getEntries ros) seq))
 
+; TODO !!!
+(defn roster-has-1-entry-which-is-subscribed-to-me? [ros]
+  (-> ros roster-entries first .getType (= RosterPacket$ItemType/both)))
+
 (defn wait-for-friending [me other]
   (let [my-roster (roster me)
         other-roster (roster other)]
     (.reload my-roster)
     (.reload other-roster)
-    (when (every? empty? (map roster-entries [my-roster other-roster]))
+    (when-not (every? true? (map roster-has-1-entry-which-is-subscribed-to-me? [my-roster other-roster]))
+      (Thread/sleep 250)
       (recur me other))))
 
 (defn- make-friends! 
@@ -93,7 +99,9 @@
          other-con (connect-and-login server (:id other) (:password other))]
      (make-friend! my-con (-> other :id (with-host-name server)))
      (make-friend! other-con (-> me :id (with-host-name server)))
-     (wait-for-friending my-con other-con)
+     ; TODO !!!
+     (Thread/sleep 2000)
+     ;(wait-for-friending my-con other-con)
      (dorun (map disconnect [my-con other-con])))))
 
 (defn create-tmp-connection! [server]
