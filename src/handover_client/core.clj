@@ -86,6 +86,21 @@
       (partner-went-online)
       (partner-went-offline))))
 
+(defn message->html [{:keys [from text]}]
+  (if (= from :me)
+    (str "Sie> " text)
+    (str "Ihr Partner> " text)))
+
+(defn messages->html [messages]
+  (let [lines (map message->html messages)]
+    (apply str (interpose \newline lines))))
+
+(defn on-chat-message-appended [_ _ _ messages]
+  (let [ui (select transfer-panel [:#text-chat])
+        html (messages->html messages)]
+    (println html)
+    (text! ui html)))
+
 (defn user-wants-to-transfer [me other server]
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
@@ -95,6 +110,7 @@
       (reset! state/other other)
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
       (chat/init! c other-with-host)
+      (add-watch chat/messages ::main-window on-chat-message-appended)
       (check-presence c other-with-host)
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
@@ -125,7 +141,7 @@
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
-                        :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
+                        :items [[(editor-pane :text "" :editable? false :id :text-chat) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
                                                                    (user-wants-to-send-chat-message))) ""]]
                         :id :chat-panel) "span 1 3"]
