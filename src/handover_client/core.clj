@@ -81,13 +81,10 @@
     (partner-went-offline)))
 
 (defn check-presence [connection id]
-  (let [pres (try
-               (presence/available? connection id)
-               (catch Exception _ nil))]
-    (case pres
-      true (partner-went-online)
-      false (partner-went-offline)
-      nil (partner-went-offline))))
+  (let [pres (presence/available? connection id)]
+    (if pres
+      (partner-went-online)
+      (partner-went-offline))))
 
 (defn user-wants-to-transfer [me other server]
   (try
@@ -97,6 +94,7 @@
       (reset! state/other other)
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
       (chat/init! c (:id other))
+      (check-presence c (-> other :id (con/with-host-name server)))
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
 
