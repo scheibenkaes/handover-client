@@ -66,10 +66,14 @@
     (text! ui-elem lbl)))
 
 (defn partner-went-online []
-  (update-presence-indicator :available))
+  (update-presence-indicator :available)
+  (let [ui (select transfer-panel [:#chat-panel])]
+    (config! (select ui [:*]) :enabled? true)))
 
 (defn partner-went-offline []
-  (update-presence-indicator :unavailable))
+  (update-presence-indicator :unavailable)
+  (let [ui (select transfer-panel [:#chat-panel])]
+    (config! (select ui [:*]) :enabled? false)))
 
 (defn on-partner-presence-changed [pres]
   (if (= :available pres)
@@ -113,7 +117,8 @@
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
                         :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
-                                                                   (user-wants-to-send-chat-message))) ""]]) "span 1 3"]
+                                                                   (user-wants-to-send-chat-message))) ""]]
+                        :id :chat-panel) "span 1 3"]
             ]))
 
 (def receive-panel 
