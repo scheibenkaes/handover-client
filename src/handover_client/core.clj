@@ -86,20 +86,19 @@
       (partner-went-online)
       (partner-went-offline))))
 
-(defn message->html [{:keys [from text]}]
+(defn message-markup [{:keys [from text]}]
   (if (= from :me)
     (str "Sie> " text)
     (str "Ihr Partner> " text)))
 
-(defn messages->html [messages]
-  (let [lines (map message->html messages)]
+(defn messages->markup [messages]
+  (let [lines (map message-markup messages)]
     (apply str (interpose \newline lines))))
 
 (defn on-chat-message-appended [_ _ _ messages]
   (let [ui (select transfer-panel [:#text-chat])
-        html (messages->html messages)]
-    (println html)
-    (text! ui html)))
+        markup (messages->markup messages)]
+    (text! ui markup)))
 
 (defn user-wants-to-transfer [me other server]
   (try
@@ -141,7 +140,7 @@
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
-                        :items [[(editor-pane :text "" :editable? false :id :text-chat) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
+                        :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
                                                                    (user-wants-to-send-chat-message))) ""]]
                         :id :chat-panel) "span 1 3"]
