@@ -80,6 +80,15 @@
     (partner-went-online)
     (partner-went-offline)))
 
+(defn check-presence [connection id]
+  (let [pres (try
+               (presence/available? connection id)
+               (catch Exception _ nil))]
+    (case pres
+      true (partner-went-online)
+      false (partner-went-offline)
+      nil (partner-went-offline))))
+
 (defn user-wants-to-transfer [me other server]
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
