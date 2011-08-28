@@ -14,7 +14,7 @@
   (alert (str msg " " (.getMessage exc))))
 
 (def main-frame
-  (frame :title "Handover" :size [800 :by 600] :on-close :exit :resizable? false))
+  (frame :title (str "Handover" " - " (:server-host @state/server-configuration)) :size [800 :by 600] :on-close :exit :resizable? false))
 
 (defn show-panel-in-main-frame [p] 
   (-> main-frame 
