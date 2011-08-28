@@ -25,10 +25,10 @@
   "Adds a listener to the given roster and calls (cb new-availablity) when the state changes."
   (.addRosterListener rost
                       (proxy [RosterListener][]
-                        (entriesAdded [this added] (log/info (str "Added to roster " added)))
-                        (entriesDeleted [this deleted] (log/info (str "Deleted from roster " deleted)))
-                        (entriesUpdated [this updated] (log/info (str "Updated in roster " updated)))
-                        (presenceChanged [this presence] 
+                        (entriesAdded [added] (log/info (str "Added to roster " added)))
+                        (entriesDeleted [deleted] (log/info (str "Deleted from roster " deleted)))
+                        (entriesUpdated [updated] (log/info (str "Updated in roster " updated)))
+                        (presenceChanged [presence] 
                                          (log/info (str "Presence changed " presence))
                                          (let [new-presence (if (available? presence) :available :unavailable)]
                                            (cb new-presence))))))
