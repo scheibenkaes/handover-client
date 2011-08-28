@@ -9,6 +9,10 @@
 
 (def not-available-icon (resource "icons/not-available.png"))
 
+(def presence-icons
+  {:available available-icon
+   :unavailable not-available-icon})
+
 (defn presence [ros user]
   (.getPresence ros user))
 

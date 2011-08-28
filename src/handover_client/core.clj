@@ -54,11 +54,33 @@
     (config! (select welcome-panel [:#spinner]) :visible? true :enabled? true)
     (.start (Thread. create-accounts))))
 
+(def presence-indicators
+  {:available ["Ihr Partner ist verfügbar." (:available presence/presence-icons)]
+   :unavailable ["<html>Ihr Partner ist <strong>nicht</strong> verfügbar.</html>" (:unavailable presence/presence-icons)]})
+
+(defn update-presence-indicator [pres]
+  (let [[lbl icon] (pres presence-indicators)
+        ui-elem (select transfer-panel [:#presence-label])]
+    (config! ui-elem :icon icon)
+    (text! ui-elem lbl)))
+
+(defn partner-went-online []
+  (update-presence-indicator :available))
+
+(defn partner-went-offline []
+  (update-presence-indicator :unavailable))
+
+(defn on-partner-presence-changed [pres]
+  (if (= :available pres)
+    (partner-went-online)
+    (partner-went-offline)))
+
 (defn user-wants-to-transfer [me other server]
   (try
-    (let [con (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
+    (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
       (logging/debug (str "User wants to transfer: " me other server))
-      (chat/init! con (:id other))
+      (presence/watch-availability! (con/roster c) on-partner-presence-changed)
+      (chat/init! c (:id other))
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
 
@@ -78,7 +100,7 @@
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[][][][][]"]
     :items [
-            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"][(label :icon presence/available-icon) "wrap,align center"]
+            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"][(label :id :presence-label) "wrap,align center"]
             [(mig-panel :constraints ["insets 5 5 5 5" "[350][][]" "[][]"] 
                         :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
                                 ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
