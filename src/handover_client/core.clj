@@ -88,13 +88,14 @@
 
 (defn user-wants-to-transfer [me other server]
   (try
-    (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
+    (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
+          other-with-host (-> other :id (con/with-host-name server))]
       (logging/debug (str "User wants to transfer: " me other server))
       (reset! state/me c)
       (reset! state/other other)
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
-      (chat/init! c (:id other))
-      (check-presence c (-> other :id (con/with-host-name server)))
+      (chat/init! c other-with-host)
+      (check-presence c other-with-host)
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
 
@@ -102,10 +103,10 @@
   (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))))
 
 (def zip-action
-  (action :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
+  (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
 
 (def send-action
-  (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
+  (action :enabled? false :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
 
 (defn user-wants-to-send-chat-message []
   (when-let [txt (-> (select transfer-panel [:#msg-field]) text)]
