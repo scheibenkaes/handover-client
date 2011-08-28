@@ -6,17 +6,22 @@
 
 (def messages (ref []))
 
-(defrecord Message [time text orig-message])
+(defrecord Message [from at text orig])
+
+(defn append-message [message]
+  (dosync
+    (alter messages conj message)))
 
 (def message-listener
   (proxy [org.jivesoftware.smack.MessageListener][]
     (processMessage 
       [_ msg]
-      (dosync
-        (alter messages conj (Message. (System/currentTimeMillis) (.getBody msg) msg))))))
+      (append-message (Message. :other (System/currentTimeMillis) (.getBody msg) msg)))))
 
 (defn send-message [^String msg]
-  (.sendMessage @chat msg))
+  (dosync
+    (.sendMessage @chat msg)
+    (alter messages conj (Message. :me (System/currentTimeMillis) msg nil))))
 
 (defn init! [con other-id]
   "Initialize the chatting system.

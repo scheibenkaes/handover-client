@@ -3,6 +3,7 @@
   (:use clojure.java.io)
   (:use [handover-client.clipboard :only [get-str put-str]])
   (:require [clojure.contrib.logging :as logging])
+  (:use [clojure.string :only [blank?]])
   (:require [handover-client.connection :as con]
             [handover-client.presence :as presence]
             [handover-client.state :as state]
@@ -93,8 +94,13 @@
 (def send-action
   (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
 
-(defn send-chat-message []
-  (-> (select transfer-panel [:#msg-field]) text chat/send-message))
+(defn user-wants-to-send-chat-message []
+  (when-let [txt (-> (select transfer-panel [:#msg-field]) text)]
+    (when-not (blank? txt)
+      (try
+        (chat/send-message txt)
+        (text! (select transfer-panel [:#msg-field]) "")
+        (catch Exception e (display-error "Fehler beim Senden der Nachricht." e))))))
 
 (def transfer-panel
   (mig-panel 
@@ -107,8 +113,7 @@
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
                         :items [[(editor-pane :text "" :editable? false) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
-                                                                   (send-chat-message)
-                                                                   (text! (select transfer-panel [:#msg-field]) ""))) ""]]) "span 1 3"]
+                                                                   (user-wants-to-send-chat-message))) ""]]) "span 1 3"]
             ]))
 
 (def receive-panel 
