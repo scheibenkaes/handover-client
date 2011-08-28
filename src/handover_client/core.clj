@@ -84,6 +84,8 @@
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))]
       (logging/debug (str "User wants to transfer: " me other server))
+      (reset! state/me c)
+      (reset! state/other other)
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
       (chat/init! c (:id other))
       (show-panel-in-main-frame transfer-panel))
