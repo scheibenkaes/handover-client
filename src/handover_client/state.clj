@@ -1,7 +1,6 @@
-(ns handover-client.state
-  (:require [handover-client.connection :as con]))
+(ns handover-client.state)
 
-(def server-configuration (atom {:server-host (con/localhost)}))
+(def server-configuration (atom {:server-host "xmpp"}))
 
 (def me (atom nil))
 
