@@ -7,6 +7,7 @@
   (:require [handover-client.connection :as con]
             [handover-client.presence :as presence]
             [handover-client.state :as state]
+            [handover-client.transfer :as transfer]
             [handover-client.chat :as chat])
   (:gen-class))
 
@@ -121,7 +122,9 @@
   (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
 
 (def send-action
-  (action :enabled? false :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."))
+  (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."
+          :handler (fn [_]
+                     (transfer/choose-transfer main-frame println))))
 
 (defn user-wants-to-send-chat-message []
   (when-let [txt (-> (select transfer-panel [:#msg-field]) text)]
