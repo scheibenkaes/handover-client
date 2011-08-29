@@ -5,7 +5,7 @@
                  [self/smack "3.2.1"]
                  [self/smackx "3.2.1"]
                  [digest "1.2.1"]
-                 [seesaw "1.0.10"]]
+                 [seesaw "1.1.0"]]
   :dev-dependencies [[lein-vim "1.0.2-SNAPSHOT"]
                      [self/smackx-debug "3.2.1"]
                      [org.clojars.autre/lein-vimclojure "1.0.0"]]
