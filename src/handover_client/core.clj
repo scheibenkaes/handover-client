@@ -105,7 +105,7 @@
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
           other-with-host (-> other :id (con/with-host-name server))]
-      (logging/debug (str "User wants to transfer: " me other server))
+      (transfer/init! c)
       (reset! state/me c)
       (reset! state/other other)
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
@@ -124,7 +124,7 @@
 (def send-action
   (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."
           :handler (fn [_]
-                     (transfer/choose-transfer main-frame println))))
+                     (transfer/choose-transfer main-frame))))
 
 (defn user-wants-to-send-chat-message []
   (when-let [txt (-> (select transfer-panel [:#msg-field]) text)]
