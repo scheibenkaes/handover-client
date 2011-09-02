@@ -16,6 +16,9 @@
   (logging/debug msg exc)
   (alert (str msg " " (.getMessage exc))))
 
+(defn center! [f]
+  (doto f (.setLocationRelativeTo nil)))
+
 (def main-frame
   (frame :title (str "Handover" " - " (:server-host @state/server-configuration)) :size [800 :by 600] :on-close :exit :resizable? false))
 
@@ -115,7 +118,7 @@
 (defn update-transfer-widgets []
   (doseq [t @transfer-widgets]
     (let [{:keys [widget transfer]} t]
-      (config! (select widget [:#progress-bar]) :value (* 100 (.getProgress transfer)))))
+      (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))))
   (Thread/sleep 1000)
   (recur))
 
@@ -137,6 +140,8 @@
       (start-transfer-ui-updater!)
       (check-presence c other-with-host)
       (show-panel-in-main-frame transfer-panel))
+      (config! main-frame :size [800 :by 600] :resizable? true)
+      (center! main-frame)
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
@@ -160,15 +165,16 @@
 
 (def transfer-panel
   (mig-panel 
-    :constraints ["insets 0 0 0 0" "[][][][][]"]
+    :constraints ["insets 0 0 0 0" "[75%][25%]" "[][grow]"]
     :items [
-            [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"][(label :id :presence-label) "wrap,align center"]
-            [(scrollable (vertical-panel :items [] :id :transfer-panel)) "span 3 10,growx,growy"]
-            [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
-                        :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
+            [(toolbar :items [send-action zip-action :separator exit-action]) ""][(label :id :presence-label) "wrap,align center"]
+            [(scrollable (vertical-panel :items [] :id :transfer-panel)) "span 1 10,growx,growy"]
+            [(mig-panel :constraints ["insets 0 0 0 0" "[150][][]" "[grow][shrink]"] 
+                        :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,grow,wrap"]
+                                [(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
                                                                    (user-wants-to-send-chat-message))) ""]]
-                        :id :chat-panel) "span 1 3"]
+                        :id :chat-panel) "grow"]
             ]))
 
 (def receive-panel 
@@ -214,9 +220,6 @@
             ["<html>Eine Datei empfangen.<br/><small>Akzeptieren Sie eine Einladung zum Datenaustausch.</small></html>" "span 2"]
             [:separator "wrap,growx"]
             [exit-action "growx"]["Das Programm beenden" "span 2"]]))
-
-(defn center! [f]
-  (doto f (.setLocationRelativeTo nil)))
 
 (defn show-main-window [] 
   (invoke-later 

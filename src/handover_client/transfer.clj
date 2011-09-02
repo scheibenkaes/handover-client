@@ -30,7 +30,7 @@
                     :constraints ["" "[][][]"]
                     :items [[(.getFileName this) "span 2"][(label :text "Übertragung läuft") "wrap"]
                             [(progress-bar :id :progress-bar) "span 2,growx"]
-                            [(action :name "Abbrechen" :handler (fn [_] (.cancel this))) "wrap"]])))
+                            [(action :name "" :handler (fn [_] (.cancel this))) "wrap"]])))
 
 (defn request-transfer [file user description]
   (dosync
