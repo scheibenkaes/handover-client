@@ -8,9 +8,7 @@
 
 (def file-transfer-manager (atom nil))
 
-(def incoming-transfers (ref []))
-
-(def outgoing-transfers (ref []))
+(def transfers (ref []))
 
 (defn file-transfer-req->panel [^FileTransferRequest req]
   (mig-panel
@@ -22,24 +20,27 @@
 
 (extend-type FileTransferRequest
   MakeWidget
-  (make-widget* [req]
-    (file-transfer-req->panel req)))
+  (make-widget* [this]
+    (file-transfer-req->panel this)))
+
 
 (defn request-transfer [file user description]
   (dosync
     (let [out (.createOutgoingFileTransfer @file-transfer-manager (str user "/handover"))]
       (.sendFile out file description)
-      (alter outgoing-transfers conj out))))
+      (alter transfers conj out))))
 
 (defn save-incoming-transfer [^FileTransferRequest req]
-  (let [transfer (.accept req)
-        file-name (.getFileName req)
-        file (file-str "~" "/Downloads" "/" file-name)]
-    (.recieveFile transfer file)))
+  (dosync
+    (let [transfer (.accept req)
+          file-name (.getFileName req)
+          file (file-str "~" "/Downloads" "/" file-name)]
+      (.recieveFile transfer file)
+      (alter transfers conj transfer))))
 
 (defn incoming-file-transfer-request [^FileTransferRequest req]
   (try
-    (let [panel (file-transfer-req->panel req)
+    (let [panel (make-widget* req)
           func (fn [& _] (save-incoming-transfer req))]
       (-> (dialog :resizable? false :content panel :option-type :ok-cancel :success-fn func) pack! show!))
     (catch Exception e (println e))))
