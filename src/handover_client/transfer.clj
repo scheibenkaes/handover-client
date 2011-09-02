@@ -4,7 +4,7 @@
   (:require [handover-client.connection :as con]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
-  (:import [org.jivesoftware.smackx.filetransfer FileTransferListener FileTransferManager FileTransferRequest]))
+  (:import [org.jivesoftware.smackx.filetransfer FileTransferListener FileTransferManager FileTransferRequest FileTransfer]))
 
 (def file-transfer-manager (atom nil))
 
@@ -23,6 +23,14 @@
   (make-widget* [this]
     (file-transfer-req->panel this)))
 
+(extend-type FileTransfer
+  MakeWidget
+  (make-widget* [this]
+                  (mig-panel
+                    :constraints ["" "[][][]"]
+                    :items [[(.getFileName this) "span 2"][(label :text "Übertragung läuft") "wrap"]
+                            [(progress-bar :id :progress-bar) "span 2,growx"]
+                            [(action :name "Abbrechen" :handler (fn [_] (.cancel this))) "wrap"]])))
 
 (defn request-transfer [file user description]
   (dosync

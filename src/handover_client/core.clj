@@ -1,9 +1,10 @@
 (ns handover-client.core
-  (:use [seesaw core mig])
+  (:use [seesaw core mig make-widget])
   (:use clojure.java.io)
   (:use [handover-client.clipboard :only [get-str put-str]])
   (:require [clojure.contrib.logging :as logging])
-  (:use [clojure.string :only [blank?]])
+  (:use [clojure.string :only [blank?]]
+        [clojure.set :only [difference]])
   (:require [handover-client.connection :as con]
             [handover-client.presence :as presence]
             [handover-client.state :as state]
@@ -101,6 +102,27 @@
         markup (messages->markup messages)]
     (text! ui markup)))
 
+(def transfer-widgets (ref []))
+
+(defn on-transfers-changed [_ _ old-state new-state]
+  (let [diff (difference (set new-state) (set old-state))
+        k-vs (for [n diff] {:widget (make-widget* n) :transfer n})
+        panel (select transfer-panel [:#transfer-panel])]
+    (dosync
+      (apply alter transfer-widgets conj k-vs))
+    (config! panel :items (map :widget @transfer-widgets))))
+
+(defn update-transfer-widgets []
+  (doseq [t @transfer-widgets]
+    (let [{:keys [widget transfer]} t]
+      (config! (select widget [:#progress-bar]) :value (* 100 (.getProgress transfer)))))
+  (Thread/sleep 1000)
+  (recur))
+
+(defn start-transfer-ui-updater! []
+  (let [t (Thread. update-transfer-widgets)]
+    (.start t)))
+
 (defn user-wants-to-transfer [me other server]
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
@@ -111,6 +133,8 @@
       (presence/watch-availability! (con/roster c) on-partner-presence-changed)
       (chat/init! c other-with-host)
       (add-watch chat/messages ::main-window on-chat-message-appended)
+      (add-watch transfer/transfers ::transfers on-transfers-changed)
+      (start-transfer-ui-updater!)
       (check-presence c other-with-host)
       (show-panel-in-main-frame transfer-panel))
     (catch Exception e (display-error "Fehler beim Verbinden: " e))))
@@ -139,9 +163,7 @@
     :constraints ["insets 0 0 0 0" "[][][][][]"]
     :items [
             [(toolbar :items [send-action zip-action :separator exit-action]) "span 3"][(label :id :presence-label) "wrap,align center"]
-            [(mig-panel :constraints ["insets 5 5 5 5" "[350][][]" "[][]"] 
-                        :items [[(progress-bar :value 75) "span 2,growx"][(button :icon (resource "icons/process-stop.png")) "wrap,span 1 2,growx,growy"]
-                                ["File: foo" "span 3,growx"]]) "span 3 10,growx,growy"]
+            [(scrollable (vertical-panel :items [] :id :transfer-panel)) "span 3 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 5 5 5" "[150][][]" "[400][][]"] 
                         :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,growx,wrap,growy"][(text :text "" :id :msg-field) "span 2,growx"]
                                 [(action :name "Senden" :handler (fn [_] 
