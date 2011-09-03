@@ -37,24 +37,21 @@
                             [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "growx,wrap"]])))
 
 (defn- status->text [^FileTransfer$Status status]
-  (let [t FileTransfer$Status]
-    (case status
-      t/cancelled "Abgebrochen"
-      t/refuse "Abgelehnt"
-      t/complete "Abgeschlossen"
-      t/error "Fehler"
-      "Übertragung läuft")))
+  (condp = status
+    FileTransfer$Status/cancelled "Abgebrochen"
+    FileTransfer$Status/refused "Abgelehnt"
+    FileTransfer$Status/complete "Abgeschlossen"
+    FileTransfer$Status/error "Fehler"
+    "Übertragung läuft"))
 
 (defn update-transfer-widgets [r]
   (doseq [t @r]
     (let [{:keys [widget ^FileTransfer transfer]} t]
-      (if (.isDone transfer)
+      (text! (select widget [:#status-label]) (status->text (.getStatus transfer)))
+      (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))
+      (when (.isDone transfer)
         (do
-          (text! (select widget [:#status-label]) (status->text (.getStatus transfer)))
-          (config! (select widget [:*]) :enabled? false)
-          (config! (select widget [:#progress-bar]) :value 100))
-        (do
-          (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))))))
+          (config! (select widget [:*]) :enabled? false)))))
   (Thread/sleep 1000)
   (recur r))
 
