@@ -9,12 +9,9 @@
             [handover-client.presence :as presence]
             [handover-client.state :as state]
             [handover-client.transfer :as transfer]
+            [handover-client.error :as error]
             [handover-client.chat :as chat])
   (:gen-class))
-
-(defn display-error [msg exc]
-  (logging/debug msg exc)
-  (alert (str msg " " (.getMessage exc))))
 
 (defn center! [f]
   (doto f (.setLocationRelativeTo nil)))
@@ -41,7 +38,7 @@
     (let [connection-data (con/create-tmp-connection! (:server-host @state/server-configuration))]
       (display-send-invitation-view connection-data))
     (catch Exception e
-      (display-error "Beim Verbindungsaufbau mit dem Server ist ein Fehler aufgetreten:" e))
+      (error/display-error "Beim Verbindungsaufbau mit dem Server ist ein Fehler aufgetreten:" e))
     (finally
       (config! (select welcome-panel [:*]) :enabled? true)
       (config! (select welcome-panel [:#spinner]) :visible? false))))
@@ -140,9 +137,9 @@
       (start-transfer-ui-updater!)
       (check-presence c other-with-host)
       (show-panel-in-main-frame transfer-panel))
-      (config! main-frame :size [800 :by 600] :resizable? true)
+      (config! main-frame :size [800 :by 600])
       (center! main-frame)
-    (catch Exception e (display-error "Fehler beim Verbinden: " e))))
+    (catch Exception e (error/display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
   (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))))
@@ -161,7 +158,7 @@
       (try
         (chat/send-message txt)
         (text! (select transfer-panel [:#msg-field]) "")
-        (catch Exception e (display-error "Fehler beim Senden der Nachricht." e))))))
+        (catch Exception e (error/display-error "Fehler beim Senden der Nachricht." e))))))
 
 (def transfer-panel
   (mig-panel 
