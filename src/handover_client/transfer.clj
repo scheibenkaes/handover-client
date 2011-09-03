@@ -4,7 +4,7 @@
   (:require [handover-client.connection :as con]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
-  (:import [org.jivesoftware.smackx.filetransfer FileTransferListener FileTransferManager FileTransferRequest FileTransfer]))
+  (:import [org.jivesoftware.smackx.filetransfer FileTransferListener FileTransferManager FileTransferRequest FileTransfer FileTransfer$Status]))
 
 (def file-transfer-manager (atom nil))
 
@@ -30,11 +30,33 @@
   MakeWidget
   (make-widget* [this]
                   (mig-panel
-                    :constraints ["insets 0 0 0 0" "[80%][20%]"]
+                    :constraints ["insets 0 0 0 0" "[60%][40%]"]
                     :items [[(.getFileName this) ""]
-                            [(label :text "Übertragung läuft") "wrap"]
+                            [(label :text "Übertragung läuft" :id :status-label) "wrap"]
                             [(progress-bar :id :progress-bar) "growx"]
                             [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "growx,wrap"]])))
+
+(defn- status->text [^FileTransfer$Status status]
+  (let [t FileTransfer$Status]
+    (case status
+      t/cancelled "Abgebrochen"
+      t/refuse "Abgelehnt"
+      t/complete "Abgeschlossen"
+      t/error "Fehler"
+      "Übertragung läuft")))
+
+(defn update-transfer-widgets [r]
+  (doseq [t @r]
+    (let [{:keys [widget ^FileTransfer transfer]} t]
+      (if (.isDone transfer)
+        (do
+          (text! (select widget [:#status-label]) (status->text (.getStatus transfer)))
+          (config! (select widget [:*]) :enabled? false)
+          (config! (select widget [:#progress-bar]) :value 100))
+        (do
+          (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))))))
+  (Thread/sleep 1000)
+  (recur r))
 
 (defn request-transfer [file user description]
   (dosync
