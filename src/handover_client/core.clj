@@ -112,15 +112,8 @@
       (apply alter transfer-widgets conj k-vs))
     (config! panel :items (map :widget @transfer-widgets))))
 
-(defn update-transfer-widgets []
-  (doseq [t @transfer-widgets]
-    (let [{:keys [widget transfer]} t]
-      (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))))
-  (Thread/sleep 1000)
-  (recur))
-
 (defn start-transfer-ui-updater! []
-  (let [t (Thread. update-transfer-widgets)]
+  (let [t (Thread. #(transfer/update-transfer-widgets transfer-widgets))]
     (.start t)))
 
 (defn user-wants-to-transfer [me other server]
@@ -165,7 +158,7 @@
     :constraints ["insets 0 0 0 0" "[75%][25%]" "[][grow]"]
     :items [
             [(toolbar :items [send-action zip-action :separator exit-action]) ""][(label :id :presence-label) "wrap,align center"]
-            [(scrollable (vertical-panel :items [] :id :transfer-panel)) "span 1 10,growx,growy"]
+            [(scrollable (vertical-panel :items [] :id :transfer-panel) :hscroll :never) "span 1 10,growx,growy"]
             [(mig-panel :constraints ["insets 0 0 0 0" "[150][][]" "[grow][shrink]"] 
                         :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,grow,wrap"]
                                 [(text :text "" :id :msg-field) "span 2,growx"]
