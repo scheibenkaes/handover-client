@@ -23,14 +23,18 @@
   (make-widget* [this]
     (file-transfer-req->panel this)))
 
+(defn ask-for-cancellation-of-transfer [^FileTransfer tr]
+  (-> (dialog :content "Wollen Sie den Transfer wirklich abbrechen?" :option-type :ok-cancel :success-fn (fn [& _] (.cancel tr))) pack! show!))
+
 (extend-type FileTransfer
   MakeWidget
   (make-widget* [this]
                   (mig-panel
-                    :constraints ["" "[][][]"]
-                    :items [[(.getFileName this) "span 2"][(label :text "Übertragung läuft") "wrap"]
-                            [(progress-bar :id :progress-bar) "span 2,growx"]
-                            [(action :name "" :handler (fn [_] (.cancel this))) "wrap"]])))
+                    :constraints ["insets 0 0 0 0" "[80%][20%]"]
+                    :items [[(.getFileName this) ""]
+                            [(label :text "Übertragung läuft") "wrap"]
+                            [(progress-bar :id :progress-bar) "growx"]
+                            [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "growx,wrap"]])))
 
 (defn request-transfer [file user description]
   (dosync
