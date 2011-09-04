@@ -1,6 +1,6 @@
 (ns handover-client.state)
 
-(def server-configuration (atom {:server-host "xmpp"}))
+(def server-configuration (atom {:server-host "scheibenkaes.org"}))
 
 (def me (atom nil))
 
