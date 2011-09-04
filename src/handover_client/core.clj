@@ -1,6 +1,7 @@
 (ns handover-client.core
   (:use [seesaw core mig make-widget])
   (:use clojure.java.io)
+  (:use clojure.contrib.command-line)
   (:use [handover-client.clipboard :only [get-str put-str]])
   (:require [clojure.contrib.logging :as logging])
   (:use [clojure.string :only [blank?]]
@@ -217,6 +218,12 @@
     (-> main-frame center! pack! show!)))
 
 (defn -main [& args]
-  (native!)
-  (show-main-window))
+  (with-command-line
+    args
+    "Benutzung: handover [-d]"
+    [[debug? d? "Debug modus" false]
+     remaining]
+    (when debug? (reset! state/server-configuration {:server-host "xmpp" }))
+    (native!)
+    (show-main-window)))
 
