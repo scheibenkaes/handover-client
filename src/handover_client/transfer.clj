@@ -4,7 +4,12 @@
   (:require [handover-client.connection :as con]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
-  (:import [org.jivesoftware.smackx.filetransfer FileTransferListener FileTransferManager FileTransferRequest FileTransfer FileTransfer$Status]))
+  (:import [org.jivesoftware.smackx.filetransfer
+            FileTransferListener
+            FileTransferManager
+            FileTransferRequest
+            FileTransfer
+            FileTransfer$Status]))
 
 (def file-transfer-manager (atom nil))
 
@@ -35,7 +40,7 @@
                     :constraints ["insets 0 0 0 0" "[60%][40%]"]
                     :items [[(.getFileName this) ""]
                             [(label :text "Übertragung läuft" :id :status-label) "wrap"]
-                            [(progress-bar :id :progress-bar) "growx"]
+                            [(progress-bar :id :progress-bar :paint-string? true) "growx"]
                             [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "wrap"]])))
 
 (defn- status->text [^FileTransfer$Status status]
