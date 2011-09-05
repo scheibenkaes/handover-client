@@ -4,6 +4,7 @@
   (:require [handover-client.connection :as con]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
+  (:import [java.text NumberFormat])
   (:import [org.jivesoftware.smackx.filetransfer
             FileTransferListener
             FileTransferManager
@@ -15,8 +16,12 @@
 
 (def transfers (ref []))
 
+(def number-format (NumberFormat/getInstance))
+
 (defn file-size->str [size]
-  (str (-> (/ 1024 size) float str) " MB"))
+  (let [mb (/ size 1024)
+        fmt (.format number-format mb)]
+    (str fmt " MB")))
 
 (defn file-transfer-req->panel [^FileTransferRequest req]
   (mig-panel
