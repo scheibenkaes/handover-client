@@ -18,7 +18,7 @@
   (doto f (.setLocationRelativeTo nil)))
 
 (def main-frame
-  (frame :title (str "Handover" " - " (:server-host @state/server-configuration)) :size [800 :by 600] :on-close :exit :resizable? false))
+  (frame :title "" :size [800 :by 600] :on-close :exit :resizable? false))
 
 (defn show-panel-in-main-frame [p] 
   (-> main-frame 
@@ -117,6 +117,10 @@
   (let [t (Thread. #(transfer/update-transfer-widgets transfer-widgets))]
     (.start t)))
 
+(defn periodically-check-for-partners-presence! [con partner]
+  (let [f (fn []  (check-presence con partner)(Thread/sleep 1500)(recur))]
+    (.start (Thread. f))))
+
 (defn user-wants-to-transfer [me other server]
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
@@ -129,7 +133,7 @@
       (add-watch chat/messages ::main-window on-chat-message-appended)
       (add-watch transfer/transfers ::transfers on-transfers-changed)
       (start-transfer-ui-updater!)
-      (check-presence c other-with-host)
+      (periodically-check-for-partners-presence! c other-with-host)
       (show-panel-in-main-frame transfer-panel))
       (config! main-frame :size [800 :by 600])
       (center! main-frame)
@@ -223,7 +227,9 @@
     "Benutzung: handover [-d]"
     [[debug? d? "Debug modus" false]
      remaining]
-    (when debug? (reset! state/server-configuration {:server-host "xmpp" }))
+    (when debug? 
+      (reset! state/server-configuration {:server-host "xmpp" }))
+    (config! main-frame :title (str "Handover" " - " (:server-host @state/server-configuration)))
     (native!)
     (show-main-window)))
 
