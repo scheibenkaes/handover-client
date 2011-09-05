@@ -16,7 +16,7 @@
 (defn file-transfer-req->panel [^FileTransferRequest req]
   (mig-panel
     :constraints ["" "[][][]"]
-    :items [["Ihr Partner möchte Ihnen eine Datei übermitteln." "span 3,wrap,growx"]
+    :items [["<html><strong>Ihr Partner möchte Ihnen eine Datei übermitteln:</strong></html>" "span 3,wrap,growx"]
             ["Dateiname:" "span 2"] [(.getFileName req) "wrap"]
             ["Dateigröße:" "span 2"] [(file-size->str (.getFileSize req)) "wrap"]]))
 
@@ -75,7 +75,7 @@
   (try
     (let [panel (make-widget* req)
           func (fn [& _] (save-incoming-transfer req))]
-      (-> (dialog :resizable? false :content panel :option-type :ok-cancel :success-fn func) pack! show!))
+      (-> (dialog :resizable? false :content panel :option-type :ok-cancel :success-fn func :cancel-fn (fn [& _] (.reject req))) pack! show!))
     (catch Exception e (println e))))
 
 (defn choose-transfer [parent]
