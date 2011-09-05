@@ -36,7 +36,7 @@
                     :items [[(.getFileName this) ""]
                             [(label :text "Übertragung läuft" :id :status-label) "wrap"]
                             [(progress-bar :id :progress-bar) "growx"]
-                            [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "growx,wrap"]])))
+                            [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "wrap"]])))
 
 (defn- status->text [^FileTransfer$Status status]
   (condp = status
