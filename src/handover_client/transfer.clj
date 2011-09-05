@@ -19,7 +19,7 @@
 (def number-format (NumberFormat/getInstance))
 
 (defn file-size->str [size]
-  (let [mb (/ size 1024)
+  (let [mb (/ size 1024 1024)
         fmt (.format number-format mb)]
     (str fmt " MB")))
 
