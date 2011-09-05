@@ -10,13 +10,15 @@
 
 (def transfers (ref []))
 
+(defn file-size->str [size]
+  (str (-> (/ 1024 size) float str) " MB"))
+
 (defn file-transfer-req->panel [^FileTransferRequest req]
   (mig-panel
     :constraints ["" "[][][]"]
     :items [["Ihr Partner möchte Ihnen eine Datei übermitteln." "span 3,wrap,growx"]
             ["Dateiname:" "span 2"] [(.getFileName req) "wrap"]
-            ["Beschreibung:" "span 2"][(.getDescription req) "wrap"]
-            ["Dateigröße:" "span 2"] [(str (.getFileSize req)) "wrap"]]))
+            ["Dateigröße:" "span 2"] [(file-size->str (.getFileSize req)) "wrap"]]))
 
 (extend-type FileTransferRequest
   MakeWidget
