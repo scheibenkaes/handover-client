@@ -121,6 +121,26 @@
   (let [f (fn []  (check-presence con partner)(Thread/sleep 1500)(recur))]
     (.start (Thread. f))))
 
+(defn cancel-and-exit [& _]
+  (doseq [t @transfer/transfers :when (not (transfer/done? t))]
+    (.cancel t))
+  (System/exit 0))
+
+(defn ask-before-shutdown []
+  (if-not (every? transfer/done? @transfer/transfers)
+    (-> (dialog :content "Sie sind im Begriff das Programm zu beenden. Laufende Übertragungen werden in diesem Fall abgebrochen. Möchten Sie wirklich beenden?" :option-type :yes-no :success-fn cancel-and-exit) pack! show! center!)
+    (System/exit 0)))
+
+(def window-listener
+  (proxy [java.awt.event.WindowListener][]
+    (windowClosing [e] (ask-before-shutdown))
+    (windowActivated [_])
+    (windowClosed [_])
+    (windowDeactivated [_])
+    (windowDeiconified [_])
+    (windowIconified [_])
+    (windowOpened [_])))
+
 (defn user-wants-to-transfer [me other server]
   (try
     (let [c (con/connect-and-login server (-> me :id (con/with-host-name server)) (:password me))
@@ -136,11 +156,13 @@
       (periodically-check-for-partners-presence! c other-with-host)
       (show-panel-in-main-frame transfer-panel))
       (config! main-frame :size [800 :by 600])
+      (config! main-frame :on-close :nothing)
+      (.addWindowListener main-frame window-listener)
       (center! main-frame)
     (catch Exception e (error/display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
-  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (System/exit 0))))
+  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (ask-before-shutdown))))
 
 (def zip-action
   (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))

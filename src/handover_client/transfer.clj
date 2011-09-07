@@ -102,3 +102,6 @@
         (fileTransferRequest [request]
                              (incoming-file-transfer-request request))))
     (reset! file-transfer-manager manager)))
+
+(defn done? [^FileTransfer t]
+  (.isDone t))
