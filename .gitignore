@@ -6,3 +6,4 @@ pom.xml
 .lein-deps-sum
 *.swp
 .DS_Store
+handover.jnlp
