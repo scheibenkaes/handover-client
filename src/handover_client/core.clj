@@ -68,12 +68,16 @@
     (config! ui-elem :icon icon)
     (text! ui-elem lbl)))
 
+(declare send-action send-action-dialogs)
+
 (defn partner-went-online []
+  (config! send-action :handler (:available send-action-dialogs))
   (update-presence-indicator :available)
   (let [ui (select transfer-panel [:#chat-panel])]
     (config! (select ui [:*]) :enabled? true)))
 
 (defn partner-went-offline []
+  (config! send-action :handler (:unavailable send-action-dialogs))
   (update-presence-indicator :unavailable)
   (let [ui (select transfer-panel [:#chat-panel])]
     (config! (select ui [:*]) :enabled? false)))
@@ -167,10 +171,13 @@
 (def zip-action
   (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
 
+(def send-action-dialogs
+   {:available (fn [_] (transfer/choose-transfer main-frame))
+    :unavailable (fn [_] (alert "Ihr Partner ist derzeit leider nicht online, Sie können ihm daher keine Dateien schicken."))})
+
 (def send-action
   (action :icon (resource "icons/go-next.png") :tip "Eine einzelne Datei übermitteln."
-          :handler (fn [_]
-                     (transfer/choose-transfer main-frame))))
+          :handler (:unavailable send-action-dialogs)))
 
 (defn user-wants-to-send-chat-message []
   (when-let [txt (-> (select transfer-panel [:#msg-field]) text)]
