@@ -9,4 +9,5 @@
   :dev-dependencies [[lein-vim "1.0.2-SNAPSHOT"]
                      [self/smackx-debug "3.2.1"]
                      [org.clojars.autre/lein-vimclojure "1.0.0"]]
+  :url "http://scheibenkaes.org/software"
   :main handover-client.core)
