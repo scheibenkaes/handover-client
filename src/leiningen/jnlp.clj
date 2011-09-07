@@ -8,6 +8,7 @@
         href='handover.jnlp'>
     <information>
         <title>Handover</title>
+        <vendor>Benjamin Klüglein</vendor>
     </information>
     <resources>
         <jar href='%s'/>
