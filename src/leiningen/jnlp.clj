@@ -1,5 +1,6 @@
 (ns leiningen.jnlp  "Generate the projects jnlp file."
-  (:use [leiningen.jar :only [get-default-uberjar-name]]))
+  (:use [leiningen.jar :only [get-default-uberjar-name]]
+        [leiningen.uberjar :only [uberjar]]))
 
 (def template
   "<?xml version='1.0' encoding='UTF-8'?>
@@ -19,5 +20,7 @@
   (format template codebase jarfile main-class))
 
 (defn jnlp [project]
-  (let [{:keys [main url uberjar-name]} project]
-    (println (fill-template url (or uberjar-name (get-default-uberjar-name project)) main))))
+  (let [{:keys [main url uberjar-name jnlp-file]} project]
+    (uberjar project)
+    (spit jnlp-file (fill-template url (or uberjar-name (get-default-uberjar-name project)) main))
+    (println "Created " jnlp-file)))
