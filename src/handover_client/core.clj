@@ -221,7 +221,7 @@
     :constraints ["" "[center][300][center]" "[][]25[][]"]
     :items [[(label :text "Teilen Sie Ihrem Partner diese ID mit." :font bold-font) "span 3,wrap,align left"]
             ["#" ""][(text :text "TODO" :editable? false :id :other-id) "growx"]
-            [(action :icon (resource "icons/edit-paste.png") :tip "Die ID in die Zwischenablage kopieren." 
+            [(action :icon (resource "icons/edit-copy.png") :tip "Die ID in die Zwischenablage kopieren." 
                      :handler (fn [_] (let [id (-> (select send-panel [:#other-id]) text)](put-str id)))) "wrap,growx"]
             [(action :name "Zurück" :handler (fn [_] (show-panel-in-main-frame welcome-panel))) ""]
             [:separator ""]
