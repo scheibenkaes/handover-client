@@ -13,6 +13,9 @@
     <resources>
         <jar href='%s'/>
     </resources>
+    <security>
+      <all-permissions />
+    </security>
     <application-desc main-class='%s'/>
 </jnlp>")
 
@@ -22,6 +25,5 @@
 
 (defn jnlp [project]
   (let [{:keys [main url uberjar-name jnlp-file]} project]
-    (uberjar project)
-    (spit jnlp-file (fill-template url (or uberjar-name (get-default-uberjar-name project)) main))
+    (spit jnlp-file (fill-template url (or uberjar-name (get-default-uberjar-name project)) (-> main str (.replace "-" "_"))))
     (println "Created " jnlp-file)))

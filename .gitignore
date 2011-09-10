@@ -7,3 +7,4 @@ pom.xml
 *.swp
 .DS_Store
 handover.jnlp
+keystore
