@@ -11,6 +11,7 @@
             [handover-client.state :as state]
             [handover-client.transfer :as transfer]
             [handover-client.error :as error]
+            [handover-client.info :as info]
             [handover-client.chat :as chat])
   (:gen-class))
 
@@ -190,7 +191,7 @@
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[55%][45%]" "[][grow]"]
     :items [
-            [(toolbar :items [send-action zip-action transfer/open-download-folder-action :separator exit-action]) ""][(label :id :presence-label) "align center,wrap"]
+            [(toolbar :items [send-action zip-action transfer/open-download-folder-action info/show-info-action :separator exit-action]) ""][(label :id :presence-label) "align center,wrap"]
             [(scrollable (vertical-panel :items [] :id :transfer-panel) :hscroll :never) "growx,growy"]
             ; Chatting panel
             [(mig-panel :constraints ["insets 0 0 0 0" "[grow][]" "[grow][shrink]"] 
