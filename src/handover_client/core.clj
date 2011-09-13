@@ -132,7 +132,7 @@
 
 (defn ask-before-shutdown []
   (if-not (every? transfer/done? @transfer/transfers)
-    (-> (dialog :content "Sie sind im Begriff das Programm zu beenden. Laufende Übertragungen werden in diesem Fall abgebrochen. Möchten Sie wirklich beenden?" :option-type :yes-no :success-fn cancel-and-exit) pack! show! center!)
+    (-> (dialog :content "Sie sind im Begriff das Programm zu beenden. Laufende Übertragungen werden in diesem Fall abgebrochen. Möchten Sie wirklich beenden?" :option-type :yes-no :success-fn cancel-and-exit) pack! center! show!)
     (System/exit 0)))
 
 (def window-listener
@@ -162,11 +162,10 @@
       (config! main-frame :size [800 :by 600])
       (config! main-frame :on-close :nothing)
       (.addWindowListener main-frame window-listener)
-      (center! main-frame)
     (catch Exception e (error/display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
-  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (ask-before-shutdown))))
+  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (ask-before-shutdown)) :tip "Beenden"))
 
 (def zip-action
   (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
@@ -189,17 +188,17 @@
 
 (def transfer-panel
   (mig-panel 
-    :constraints ["insets 0 0 0 0" "[75%][25%]" "[][grow]"]
+    :constraints ["insets 0 0 0 0" "[55%][45%]" "[][grow]"]
     :items [
-            [(toolbar :items [send-action zip-action :separator exit-action]) ""][(label :id :presence-label) "wrap,align center"]
-            [(scrollable (vertical-panel :items [] :id :transfer-panel) :hscroll :never) "span 1 10,growx,growy"]
-            [(mig-panel :constraints ["insets 0 0 0 0" "[150][][]" "[grow][shrink]"] 
-                        :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 3,grow,wrap"]
-                                [(text :text "" :id :msg-field) "span 2,growx"]
+            [(toolbar :items [send-action zip-action transfer/open-download-folder-action :separator exit-action]) ""][(label :id :presence-label) "align center,wrap"]
+            [(scrollable (vertical-panel :items [] :id :transfer-panel) :hscroll :never) "growx,growy"]
+            ; Chatting panel
+            [(mig-panel :constraints ["insets 0 0 0 0" "[grow][]" "[grow][shrink]"] 
+                        :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 2,grow,wrap"]
+                                [(text :text "" :id :msg-field) "growx"]
                                 [(action :name "Senden" :handler (fn [_] 
                                                                    (user-wants-to-send-chat-message))) ""]]
-                        :id :chat-panel) "grow"]
-            ]))
+                        :id :chat-panel) "growx,growy"]]))
 
 (def receive-panel 
   (mig-panel

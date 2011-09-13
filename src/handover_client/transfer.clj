@@ -1,10 +1,13 @@
 (ns handover-client.transfer
   (:use [seesaw core make-widget mig])
-  (:use [clojure.contrib.io :only [file-str]])
+  (:require [handover-client.settings :as settings])
+  (:use [clojure.contrib.io :only [file-str as-file]]
+        [clojure.java.io :only (resource)])
   (:require [handover-client.connection :as con]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
   (:import [java.text NumberFormat])
+  (:import [java.awt Desktop])
   (:import [org.jivesoftware.smackx.filetransfer
             FileTransferListener
             FileTransferManager
@@ -17,6 +20,13 @@
 (def transfers (ref []))
 
 (def number-format (NumberFormat/getInstance))
+
+(def desktop (Desktop/getDesktop))
+
+(def open-file #(.open desktop (as-file %)))
+
+(defn done? [^FileTransfer t]
+  (.isDone t))
 
 (defn file-size->str [size]
   (let [mb (/ size 1024 1024)
@@ -38,15 +48,25 @@
 (defn ask-for-cancellation-of-transfer [^FileTransfer tr]
   (-> (dialog :content "Wollen Sie den Transfer wirklich abbrechen?" :option-type :ok-cancel :success-fn (fn [& _] (.cancel tr))) pack! show!))
 
+(def stop-icon
+  (resource "icons/process-stop.png"))
+
+(def open-icon
+  (resource "icons/document-open.png"))
+
+(def open-download-folder-action
+  (action :tip "Öffnen Sie die das Verzeichnis, in dem alle heruntergeladenen Dateien gespeichert werden" :icon open-icon 
+          :handler (fn [_] (open-file @settings/download-folder))))
+
 (extend-type FileTransfer
   MakeWidget
   (make-widget* [this]
                   (mig-panel
-                    :constraints ["insets 0 0 0 0" "[60%][40%]"]
+                    :constraints ["insets 0 0 0 0" "[grow][shrink]"]
                     :items [[(.getFileName this) ""]
                             [(label :text "Übertragung läuft" :id :status-label) "wrap"]
                             [(progress-bar :id :progress-bar :paint-string? true) "growx"]
-                            [(action :name "Stoppen" :handler (fn [_] (ask-for-cancellation-of-transfer this))) "wrap"]])))
+                            [(button :action (action :tip "Übertragung abbrechen" :icon stop-icon :handler (fn [_] (ask-for-cancellation-of-transfer this)))) "growx"]])))
 
 (defn- status->text [^FileTransfer$Status status]
   (condp = status
@@ -61,7 +81,7 @@
     (let [{:keys [widget ^FileTransfer transfer]} t]
       (text! (select widget [:#status-label]) (status->text (.getStatus transfer)))
       (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))
-      (when (.isDone transfer)
+      (when (done? transfer)
         (do
           (config! (select widget [:*]) :enabled? false)))))
   (Thread/sleep 1000)
@@ -77,7 +97,7 @@
   (dosync
     (let [transfer (.accept req)
           file-name (.getFileName req)
-          file (file-str "~" "/Downloads" "/" file-name)]
+          file (file-str @settings/download-folder "/" file-name)]
       (.recieveFile transfer file)
       (alter transfers conj transfer))))
 
@@ -102,6 +122,3 @@
         (fileTransferRequest [request]
                              (incoming-file-transfer-request request))))
     (reset! file-transfer-manager manager)))
-
-(defn done? [^FileTransfer t]
-  (.isDone t))
