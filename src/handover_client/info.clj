@@ -12,7 +12,7 @@
 
 (def info-panel
   (mig-panel :constraints ["" "[][][]"]
-       :items [["Handover" "span 3,growx,wrap"]
+       :items [["<html><strong>Handover</strong></html>" "span 3,growx,wrap"]
                ["Copyright 2011 Benjamin Klüglein" "span 3,growx,wrap"]
                [:separator "wrap"]
                [(url-button "Handover im Internet" "http://scheibenkaes.org/software") "growx,wrap"]
