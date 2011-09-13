@@ -248,7 +248,7 @@
 (defn show-main-window [] 
   (invoke-later 
     (show-panel-in-main-frame welcome-panel)
-    (-> main-frame center! pack! show!)))
+    (-> main-frame pack! show!)))
 
 (defn -main [& args]
   (with-command-line
