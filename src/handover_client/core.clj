@@ -187,6 +187,9 @@
         (text! (select transfer-panel [:#msg-field]) "")
         (catch Exception e (error/display-error "Fehler beim Senden der Nachricht." e))))))
 
+(def send-chat-message-handler
+  (fn [& _] (user-wants-to-send-chat-message)))
+
 (def transfer-panel
   (mig-panel 
     :constraints ["insets 0 0 0 0" "[55%][45%]" "[][grow]"]
@@ -196,9 +199,8 @@
             ; Chatting panel
             [(mig-panel :constraints ["insets 0 0 0 0" "[grow][]" "[grow][shrink]"] 
                         :items [[(scrollable (editor-pane :text "" :editable? false :id :text-chat)) "span 2,grow,wrap"]
-                                [(text :text "" :id :msg-field) "growx"]
-                                [(action :name "Senden" :handler (fn [_] 
-                                                                   (user-wants-to-send-chat-message))) ""]]
+                                [(text :text "" :id :msg-field :listen [:action-performed send-chat-message-handler]) "growx"]
+                                [(action :name "Senden" :handler send-chat-message-handler) ""]]
                         :id :chat-panel) "growx,growy"]]))
 
 (def receive-panel 
