@@ -1,4 +1,4 @@
-(defproject handover-client "1.0.1"
+(defproject handover-client "1.1.0"
   :description "Handing over files. DAU approved."
   :dependencies [[org.clojure/clojure "1.2.1"]
                  [org.clojure/clojure-contrib "1.2.0"]
