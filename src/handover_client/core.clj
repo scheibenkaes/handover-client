@@ -12,7 +12,9 @@
             [handover-client.transfer :as transfer]
             [handover-client.error :as error]
             [handover-client.info :as info]
-            [handover-client.chat :as chat])
+            [handover-client.chat :as chat]
+            [handover-client.resources :as resources]
+            [handover-client.zip.ui :as zip-ui])
   (:gen-class))
 
 (defn center! [f]
@@ -166,10 +168,14 @@
     (catch Exception e (error/display-error "Fehler beim Verbinden: " e))))
 
 (def exit-action
-  (action :icon (resource "icons/system-log-out.png") :handler (fn [_] (ask-before-shutdown)) :tip "Beenden"))
+  (action :icon (resources/icon-by-name "system-log-out") :handler (fn [_] (ask-before-shutdown)) :tip "Beenden"))
 
 (def zip-action
-  (action :enabled? false :icon (resource "icons/package.png") :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."))
+  (action :icon (resources/icon-by-name "package")
+          :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."
+          :handler (fn [_] 
+                     (let [user-decision (zip-ui/show-zip-dialog)]
+                       (zip-ui/run-zip-creation-in-wait-dialog user-decision)))))
 
 (def send-action-dialogs
    {:available (fn [_] (transfer/choose-transfer main-frame))

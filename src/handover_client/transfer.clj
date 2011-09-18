@@ -108,11 +108,17 @@
       (-> (dialog :resizable? false :content panel :option-type :ok-cancel :success-fn func :cancel-fn (fn [& _] (.reject req))) pack! show!))
     (catch Exception e (println e))))
 
+(defn complete-name []
+  (-> @state/other :id (con/with-host-name (:server-host @state/server-configuration))))
+
 (defn choose-transfer [parent]
   (let [chooser (JFileChooser.)
         ret (.showOpenDialog chooser parent)]
     (when (= JFileChooser/APPROVE_OPTION ret)
-      (request-transfer (.getSelectedFile chooser) (-> @state/other :id (con/with-host-name (:server-host @state/server-configuration))) "TODO"))))
+      (request-transfer (.getSelectedFile chooser) (complete-name) "TODO"))))
+
+(defn transfer-file [^java.io.File file]
+  (request-transfer file (complete-name) "TODO"))
 
 (defn init! [con]
   (let [manager  (FileTransferManager. con)]
