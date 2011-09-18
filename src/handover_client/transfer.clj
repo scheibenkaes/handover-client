@@ -38,7 +38,9 @@
     :constraints ["" "[][][]"]
     :items [["<html><strong>Ihr Partner möchte Ihnen eine Datei übermitteln:</strong></html>" "span 3,wrap,growx"]
             ["Dateiname:" "span 2"] [(.getFileName req) "wrap"]
-            ["Dateigröße:" "span 2"] [(file-size->str (.getFileSize req)) "wrap"]]))
+            ["Dateigröße:" "span 2"] [(file-size->str (.getFileSize req)) "wrap"]
+            [:separator "wrap"]
+            [(format "Nach Abschluss der Übertragung finden Sie die Datei unter %s" @settings/download-folder) "span 3,grow,wrap"]]))
 
 (extend-type FileTransferRequest
   MakeWidget

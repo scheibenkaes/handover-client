@@ -30,4 +30,5 @@
   (-> (dialog :type :info :content info-panel :title "Informationen zu Handover" :resizable? false) pack! show!))
 
 (def show-info-action
-  (action :icon info-icon :handler (fn [_] (show-info-dialog))))
+  (action :icon info-icon :handler (fn [_] (show-info-dialog))
+          :tip "Weitere Informationen zu diesem Programm."))
