@@ -80,20 +80,23 @@
 
 (defn update-transfer-widgets [r]
   (doseq [t @r]
-    (let [{:keys [widget ^FileTransfer transfer]} t]
-      (text! (select widget [:#status-label]) (status->text (.getStatus transfer)))
-      (config! (select widget [:#progress-bar]) :value (* 100.0 (.getProgress transfer)))
-      (when (done? transfer)
+    (let [{:keys [widget transfer]} t]
+      (text! (select widget [:#status-label]) (status->text (-> transfer :transfer .getStatus)))
+      (config! (select widget [:#progress-bar]) :value (* 100.0 (-> transfer :transfer .getProgress)))
+      (when (done? (-> transfer :transfer))
         (do
           (config! (select widget [:*]) :enabled? false)))))
   (Thread/sleep 1000)
   (recur r))
 
+(defn transfer-info [transfer file-on-disk]
+  {:transfer transfer :file-on-disk file-on-disk})
+
 (defn request-transfer [file user description]
   (dosync
     (let [out (.createOutgoingFileTransfer @file-transfer-manager (str user "/handover"))]
       (.sendFile out file description)
-      (alter transfers conj out))))
+      (alter transfers conj (transfer-info out (.getPath file))))))
 
 (defn save-incoming-transfer [^FileTransferRequest req]
   (dosync
@@ -101,7 +104,7 @@
           file-name (.getFileName req)
           file (file-str @settings/download-folder "/" file-name)]
       (.recieveFile transfer file)
-      (alter transfers conj transfer))))
+      (alter transfers conj (transfer-info transfer file-name)))))
 
 (defn incoming-file-transfer-request [^FileTransferRequest req]
   (try

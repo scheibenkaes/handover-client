@@ -114,7 +114,7 @@
 
 (defn on-transfers-changed [_ _ old-state new-state]
   (let [diff (difference (set new-state) (set old-state))
-        k-vs (for [n diff] {:widget (make-widget* n) :transfer n})
+        k-vs (for [n diff] {:widget (-> n :transfer make-widget*) :transfer n})
         panel (select transfer-panel [:#transfer-panel])]
     (dosync
       (apply alter transfer-widgets conj k-vs))
@@ -129,12 +129,12 @@
     (.start (Thread. f))))
 
 (defn cancel-and-exit [& _]
-  (doseq [t @transfer/transfers :when (not (transfer/done? t))]
+  (doseq [t @transfer/transfers :when (not (-> t :transfer transfer/done?))]
     (.cancel t))
   (System/exit 0))
 
 (defn ask-before-shutdown []
-  (if-not (every? transfer/done? @transfer/transfers)
+  (if-not (every? #(-> % :transfer transfer/done?) @transfer/transfers)
     (-> (dialog :content "Sie sind im Begriff das Programm zu beenden. Laufende Übertragungen werden in diesem Fall abgebrochen. Möchten Sie wirklich beenden?" :option-type :yes-no :success-fn cancel-and-exit) pack! center! show!)
     (System/exit 0)))
 
