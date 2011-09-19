@@ -4,6 +4,7 @@
   (:use [clojure.contrib.io :only [file-str as-file]]
         [clojure.java.io :only (resource)])
   (:require [handover-client.connection :as con]
+            [handover-client.resources :as resources]
             [handover-client.state :as state])
   (:import [javax.swing JFileChooser JDialog])
   (:import [java.text NumberFormat])
@@ -68,7 +69,7 @@
                     :items [[(.getFileName this) ""]
                             [(label :text "Übertragung läuft" :id :status-label) "wrap"]
                             [(progress-bar :id :progress-bar :paint-string? true) "growx"]
-                            [(button :action (action :tip "Übertragung abbrechen" :icon stop-icon :handler (fn [_] (ask-for-cancellation-of-transfer this)))) "growx"]])))
+                            [(button :id :open-cancel-button :action (action :tip "Übertragung abbrechen" :icon stop-icon :handler (fn [_] (ask-for-cancellation-of-transfer this)))) "growx"]])))
 
 (defn- status->text [^FileTransfer$Status status]
   (condp = status
@@ -78,6 +79,9 @@
     FileTransfer$Status/error "Fehler"
     "Übertragung läuft"))
 
+(defn open-file-action [file]
+  (action :tip "Die Datei öffnen" :icon (resources/icon-by-name "document-open-small") :handler (fn [_] (open-file file))))
+
 (defn update-transfer-widgets [r]
   (doseq [t @r]
     (let [{:keys [widget transfer]} t]
@@ -85,7 +89,8 @@
       (config! (select widget [:#progress-bar]) :value (* 100.0 (-> transfer :transfer .getProgress)))
       (when (done? (-> transfer :transfer))
         (do
-          (config! (select widget [:*]) :enabled? false)))))
+          (config! (select widget [:#progress-bar]) :enabled? false)
+          (config! (select widget [:#open-cancel-button]) :action (open-file-action (-> :file-on-disk transfer)))))))
   (Thread/sleep 1000)
   (recur r))
 
@@ -104,7 +109,7 @@
           file-name (.getFileName req)
           file (file-str @settings/download-folder "/" file-name)]
       (.recieveFile transfer file)
-      (alter transfers conj (transfer-info transfer file-name)))))
+      (alter transfers conj (transfer-info transfer (.getCanonicalPath file))))))
 
 (defn incoming-file-transfer-request [^FileTransferRequest req]
   (try
