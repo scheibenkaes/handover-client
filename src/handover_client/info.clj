@@ -29,6 +29,12 @@
 (defn show-info-dialog []
   (-> (dialog :type :info :content info-panel :title "Informationen zu Handover" :resizable? false) pack! show!))
 
+(def info-action-data
+  [:icon info-icon :handler (fn [_] (show-info-dialog))
+   :tip "Weitere Informationen zu diesem Programm."])
+
 (def show-info-action
-  (action :icon info-icon :handler (fn [_] (show-info-dialog))
-          :tip "Weitere Informationen zu diesem Programm."))
+  (apply action info-action-data))
+
+(def show-info-action-small
+  (->> (-> (apply hash-map info-action-data) (assoc :icon (icon-by-name "help-browser-small")) vec flatten) (apply action)))
