@@ -6,6 +6,9 @@
 
 (def chooser (atom nil))
 
+(defn now-str []
+  (-> (java.text.SimpleDateFormat. "dd.MM.yyyy-HH:mm:ss") (.format (java.util.Date.))))
+
 (defn create-zip-panel []
   (let [file-chooser (doto
                        (JFileChooser.)
@@ -17,7 +20,7 @@
                :items [["Wählen Sie die Dateien aus, die in eine ZIP-Datei verpackt werden sollen." "wrap"]
                        [file-chooser "grow,wrap"]
                        ["Geben Sie einen Namen für die ZIP-Datei an:" "grow,wrap"]
-                       [(text :text (-> file-chooser .getCurrentDirectory .getName)
+                       [(text :text (now-str)
                               :id :file-name) "growx,wrap"]])))
 
 (defn on-create-zip [w]

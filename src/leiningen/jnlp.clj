@@ -11,7 +11,7 @@
         <vendor>Benjamin Klüglein</vendor>
     </information>
     <resources>
-        <jar href='%s'/>
+        <jar href='handover-webstart.jar'/>
     </resources>
     <security>
       <all-permissions />
@@ -20,10 +20,10 @@
 </jnlp>")
 
 
-(defn fill-template [codebase jarfile main-class]
-  (format template codebase jarfile main-class))
+(defn fill-template [codebase main-class]
+  (format template codebase main-class))
 
 (defn jnlp [project]
   (let [{:keys [main url uberjar-name jnlp-file]} project]
-    (spit jnlp-file (fill-template url (or uberjar-name (get-default-uberjar-name project)) (-> main str (.replace "-" "_"))))
+    (spit jnlp-file (fill-template url (-> main str (.replace "-" "_"))))
     (println "Created " jnlp-file)))
