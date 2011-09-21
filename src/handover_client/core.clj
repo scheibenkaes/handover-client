@@ -174,7 +174,7 @@
   (action :icon (resources/icon-by-name "package")
           :tip "Übertragen Sie mehrere Dateien, in dem Sie sie in ein Archiv verpacken."
           :handler (fn [_] 
-                     (let [user-decision (zip-ui/show-zip-dialog)]
+                     (when-let [user-decision (zip-ui/show-zip-dialog)]
                        (zip-ui/run-zip-creation-in-wait-dialog user-decision)))))
 
 (def send-action-dialogs
