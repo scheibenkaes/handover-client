@@ -46,16 +46,18 @@
 (defn run-zip-creation-in-wait-dialog [{:keys [files file-name] :as info}]
   "Show a wait dialog during the zip creation.
   info - has to be a map. See on-create-zip"
-  (let [dlg (wait-dialog info)
-        wait (promise)
-        zipper (fn []
-                 (let [zf (apply zip/create-zip file-name files)]
-                   (deliver wait zf)))]
-    (.start (Thread. #(-> dlg (config! :on-close :nothing) pack! show!)))
-    (.start (Thread. zipper))
-    (transfer/transfer-file @wait)
-    (hide! dlg)
-    (dispose! dlg)))
+  (if files
+    (let [dlg (wait-dialog info)
+          wait (promise)
+          zipper (fn []
+                   (let [zf (apply zip/create-zip file-name files)]
+                     (deliver wait zf)))]
+      (.start (Thread. #(-> dlg (config! :on-close :nothing) pack! show!)))
+      (.start (Thread. zipper))
+      (transfer/transfer-file @wait)
+      (hide! dlg)
+      (dispose! dlg))
+    (alert "Bitte wählen Sie eine oder mehrere Dateien aus.\n(Ordner werden aktuell leider nicht unterstützt)")))
 
 (defn show-zip-dialog []
   "Display the zip creation dialog.
